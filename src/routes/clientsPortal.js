@@ -64,7 +64,7 @@ router.get('/:id?', async (req, res) => {
         GROUP_CONCAT(ca.amenities_id) AS amenities
       FROM ${TABLE.CLIENTS_TABLE} c
       LEFT JOIN ${TABLE.CLIENT_AMENITIES_TABLE} ca ON c.id = ca.customer_id
-      WHERE c.status = 1
+      WHERE NOT c.status = 1
     `;
     let queryParams = [];
 
@@ -127,6 +127,7 @@ router.put('/:id', async (req, res) => {
       price !== undefined && 'price = ?',
       purchase_type && 'purchase_type = ?',
       location && 'location = ?',
+      status && 'status = ?',
       user_id !== undefined && 'user_id = ?',
     ].filter(Boolean).join(', ');
     const updateValues = [
@@ -138,6 +139,7 @@ router.put('/:id', async (req, res) => {
       price,
       purchase_type,
       location,
+      status,
       user_id,
     ].filter(value => value !== undefined);
     if (updateFields.length > 0) {

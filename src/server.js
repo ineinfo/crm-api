@@ -8,6 +8,7 @@ const usersPortal = require('./routes/usersPortal'); // User path
 const clientsPortal = require('./routes/clientsPortal'); // User path
 const amenitiesPortal = require('./routes/amenitiesPortal'); // amenities path
 const propertypePortal = require('./routes/propertypePortal'); // amenities path
+const leadPortal = require('./routes/leadPortal'); // amenities path
 const PORT = process.env.PORT || 3000;
 const app = express();
 const bodyParser = require('body-parser');
@@ -38,6 +39,7 @@ app.use('/amenities', amenitiesPortal);
 app.use('/propertytype', propertypePortal);
 app.use('/users', usersPortal);
 app.use('/clients', clientsPortal);
+app.use('/leads', leadPortal);
 
 app.get('/', (req, res) => {
   res.send('Hello, World!');
