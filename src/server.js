@@ -8,6 +8,7 @@ const usersPortal = require('./routes/usersPortal'); // User path
 const clientsPortal = require('./routes/clientsPortal'); // User path
 const amenitiesPortal = require('./routes/amenitiesPortal'); // amenities path
 const propertypePortal = require('./routes/propertypePortal'); // amenities path
+const propertiesPortal = require('./routes/propertiesPortal'); // amenities path
 const leadPortal = require('./routes/leadPortal'); // amenities path
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -16,6 +17,7 @@ const path = require('path');
 
 // Serve static files from the "public" directory
 app.use('/userimages', express.static(path.join(__dirname, '../public/userimages')));
+app.use('/propertyimages', express.static(path.join(__dirname, '../public/propertyimages'))); // Add this line
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -37,6 +39,7 @@ app.use('/auth', authRoutes);
 app.use('/roles', rolePortal);
 app.use('/amenities', amenitiesPortal);
 app.use('/propertytype', propertypePortal);
+app.use('/properties', propertiesPortal);
 app.use('/users', usersPortal);
 app.use('/clients', clientsPortal);
 app.use('/leads', leadPortal);
