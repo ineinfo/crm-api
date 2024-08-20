@@ -8,7 +8,7 @@ router.post('/', async (req, res) => {
   const {
     first_name, last_name, email, phone, number_of_bedrooms,
     price, property_type, location, user_id, next_followup_date,
-    next_followup_time,  created, amenities
+    next_followup_time, amenities
   } = req.body;
   if (!first_name || !last_name || !email || !phone || !property_type ) {
     return res.status(400).json({ message: 'Required fields cannot be empty', status: 'error' });
@@ -16,8 +16,8 @@ router.post('/', async (req, res) => {
   try {
     // Insert the lead
     const [result] = await pool.query(
-      `INSERT INTO ${TABLE.LEADS_TABLE} (first_name, last_name, email, phone, number_of_bedrooms, price, property_type, location, user_id, next_followup_date, next_followup_time, status, created) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [first_name, last_name, email, phone, number_of_bedrooms, price, property_type, location, user_id, next_followup_date, next_followup_time, 1, created]
+      `INSERT INTO ${TABLE.LEADS_TABLE} (first_name, last_name, email, phone, number_of_bedrooms, price, property_type, location, user_id, next_followup_date, next_followup_time, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [first_name, last_name, email, phone, number_of_bedrooms, price, property_type, location, user_id, next_followup_date, next_followup_time, 1]
     );
     const leadId = result.insertId;
 

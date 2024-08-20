@@ -22,28 +22,39 @@ const upload = multer({ storage: storage });
 
 // Create a new user
 router.post('/', upload.fields([{ name: 'avatarurl' }]), async (req, res) => {
-  const { first_name, last_name, email, password, role_id } = req.body;
-  if (!email || !password ||!role_id) {
-    return res.status(400).json({ message: 'Email, password or role cannot be empty', status: 'error' });
+  const { first_name, last_name, email, mobile_number, role_id } = req.body;
+  
+  // Check if required fields are provided
+  if (!email || !mobile_number || !role_id) {
+    return res.status(400).json({ message: 'Email, mobile number, or role cannot be empty', status: 'error' });
   }
-  // const avatarUrl = req.files['avatarurl'] ? req.files['avatarurl'][0].path : null;
+
+  // Construct the avatar URL if the file is uploaded
   const avatarUrl = req.files['avatarurl'] 
-  ? `${req.protocol}://${req.get('host')}/userimages/${req.files['avatarurl'][0].filename}` 
-  : null;
-  console.log("avatarUrl:", avatarUrl);
+    ? `${req.protocol}://${req.get('host')}/userimages/${req.files['avatarurl'][0].filename}` 
+    : null;
+
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const [result] = await pool.query(`INSERT INTO ${TABLE.USERS_TABLE} (first_name, last_name, avatarurl, email, password, role_id) VALUES (?, ?, ?, ?, ?, ?)`, [first_name, last_name, avatarUrl, email, hashedPassword, role_id]);
+    // Insert the new user into the database
+    const [result] = await pool.query(
+      `INSERT INTO ${TABLE.USERS_TABLE} (first_name, last_name, avatarurl, email, mobile_number, role_id) 
+       VALUES (?, ?, ?, ?, ?, ?)`, 
+      [first_name, last_name, avatarUrl, email, mobile_number, role_id]
+    );
+
+    // Return success response
     res.status(201).json({
       message: 'User created successfully',
       status: true,
       userId: result.insertId
     });
   } catch (error) {
+    // Handle any errors
     console.error('Error creating user:', error);
     res.status(500).json({ message: 'Server error', status: 'error' });
   }
 });
+
 
 // get user(s)
 router.get('/:id?', async (req, res) => {
@@ -51,13 +62,13 @@ router.get('/:id?', async (req, res) => {
   try {
     // Construct the query
     const query = id 
-    ? `SELECT u.id, u.first_name, u.last_name, u.email, u.role_id, r.role_name, u.avatarurl
+    ? `SELECT u.id, u.first_name, u.last_name, u.email, u.role_id, r.role_name,u.mobile_number, u.avatarurl
        FROM ${TABLE.USERS_TABLE} u 
        JOIN ${TABLE.ROLES_TABLE} r 
        ON u.role_id = r.id 
        WHERE u.id = ? AND u.status = 1
        ORDER BY u.created DESC`  // Add the ORDER BY clause
-    : `SELECT u.id, u.first_name, u.last_name, u.email, u.role_id, r.role_name, u.avatarurl
+    : `SELECT u.id, u.first_name, u.last_name, u.email, u.role_id, r.role_name,u.mobile_number, u.avatarurl
        FROM ${TABLE.USERS_TABLE} u 
        JOIN ${TABLE.ROLES_TABLE} r 
        ON u.role_id = r.id 
@@ -96,11 +107,11 @@ router.get('/:id?', async (req, res) => {
 // UPDATE THE FIELDS
 router.put('/:id', upload.fields([{ name: 'avatarurl' }]), async (req, res) => {
   const { id } = req.params;
-  const { first_name, last_name, email, password, role_id } = req.body;
+  const { first_name, last_name, email, mobile_number, role_id } = req.body;
 
   try {
     // Get the existing user details to keep avatarurl if not provided
-    const [user] = await pool.query(`SELECT avatarurl, password FROM ${TABLE.USERS_TABLE} WHERE id = ?`, [id]);
+    const [user] = await pool.query(`SELECT avatarurl FROM ${TABLE.USERS_TABLE} WHERE id = ?`, [id]);
     if (user.length === 0) {
       return res.status(404).json({ message: 'User not found', status: 'error' });
     }
@@ -111,19 +122,15 @@ router.put('/:id', upload.fields([{ name: 'avatarurl' }]), async (req, res) => {
       ? `${req.protocol}://${req.get('host')}/userimages/${req.files['avatarurl'][0].filename}`
       : existingAvatarUrl;
 
-    // Hash password if a new password is provided
-    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
-
     // Build the SET clause and values
-    const fields = [first_name, last_name, email, role_id, newAvatarUrl];
-    if (hashedPassword) fields.push(hashedPassword);
+    const fields = [first_name, last_name, email, mobile_number, role_id, newAvatarUrl];
     const setClause = [
       first_name ? 'first_name = ?' : null,
       last_name ? 'last_name = ?' : null,
       email ? 'email = ?' : null,
+      mobile_number ? 'mobile_number = ?' : null,
       role_id ? 'role_id = ?' : null,
-      newAvatarUrl ? 'avatarurl = ?' : null,
-      hashedPassword ? 'password = ?' : null
+      newAvatarUrl ? 'avatarurl = ?' : null
     ].filter(Boolean).join(', ');
 
     if (!setClause) {
@@ -147,6 +154,7 @@ router.put('/:id', upload.fields([{ name: 'avatarurl' }]), async (req, res) => {
     res.status(500).json({ message: 'Server error', status: 'error' });
   }
 });
+
 
 // Delete a user
 router.delete('/:id', async (req, res) => {

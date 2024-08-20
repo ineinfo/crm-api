@@ -6,10 +6,11 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   const {
     customer_name, customer_mobile, customer_email, customer_address,
-    number_of_bedrooms, price, purchase_type, location, user_id, created, status,
+    number_of_bedrooms, number_of_bathrooms, price, purchase_type, location, user_id, created, status,
     amenities
   } = req.body;
 
+  // Check required fields
   if (!customer_name || !customer_mobile || !customer_email || !purchase_type || !location) {
     return res.status(400).json({ message: 'Required fields cannot be empty', status: 'error' });
   }
@@ -17,10 +18,17 @@ router.post('/', async (req, res) => {
   try {
     // Insert the client
     const [result] = await pool.query(
-      `INSERT INTO ${TABLE.CLIENTS_TABLE} (customer_name, customer_mobile, customer_email, customer_address, number_of_bedrooms, price, purchase_type, location, user_id, created, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [customer_name, customer_mobile, customer_email, customer_address, number_of_bedrooms, price, purchase_type, location, user_id, created, status]
+      `INSERT INTO ${TABLE.CLIENTS_TABLE} 
+      (customer_name, customer_mobile, customer_email, customer_address, number_of_bedrooms, number_of_bathrooms, price, purchase_type, location, user_id, created, status) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        customer_name, customer_mobile, customer_email, customer_address, 
+        number_of_bedrooms, number_of_bathrooms, price, purchase_type, 
+        location, user_id, created, status
+      ]
     );
     const clientId = result.insertId;
+
     // Insert amenities if provided
     if (amenities && Array.isArray(amenities)) {
       const amenityPromises = amenities.map(amenityId =>
@@ -55,6 +63,7 @@ router.get('/:id?', async (req, res) => {
         c.customer_email,
         c.customer_address,
         c.number_of_bedrooms,
+        c.number_of_bathrooms,
         c.price,
         c.purchase_type,
         c.location,
@@ -64,7 +73,7 @@ router.get('/:id?', async (req, res) => {
         GROUP_CONCAT(ca.amenities_id) AS amenities
       FROM ${TABLE.CLIENTS_TABLE} c
       LEFT JOIN ${TABLE.CLIENT_AMENITIES_TABLE} ca ON c.id = ca.customer_id
-      WHERE NOT c.status = 1
+      WHERE NOT c.status = 0
     `;
     let queryParams = [];
 
@@ -111,57 +120,70 @@ router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const {
     customer_name, customer_mobile, customer_email, customer_address,
-    number_of_bedrooms, price, purchase_type, location, user_id, created, status,
+    number_of_bedrooms, number_of_bathrooms, price, purchase_type, location, user_id, status,
     amenities
   } = req.body;
+
+  // Check for required fields
   if (!id || (!customer_name && !customer_mobile && !customer_email && !purchase_type && !location)) {
     return res.status(400).json({ message: 'Required fields cannot be empty', status: 'error' });
   }
+
   try {
+    // Prepare fields for the update query
     const updateFields = [
       customer_name && 'customer_name = ?',
       customer_mobile && 'customer_mobile = ?',
       customer_email && 'customer_email = ?',
       customer_address && 'customer_address = ?',
       number_of_bedrooms !== undefined && 'number_of_bedrooms = ?',
+      number_of_bathrooms !== undefined && 'number_of_bathrooms = ?',
       price !== undefined && 'price = ?',
       purchase_type && 'purchase_type = ?',
       location && 'location = ?',
-      status && 'status = ?',
+      status !== undefined && 'status = ?',
       user_id !== undefined && 'user_id = ?',
     ].filter(Boolean).join(', ');
+
+    // Prepare values for the update query
     const updateValues = [
       customer_name,
       customer_mobile,
       customer_email,
       customer_address,
       number_of_bedrooms,
+      number_of_bathrooms,
       price,
       purchase_type,
       location,
       status,
       user_id,
     ].filter(value => value !== undefined);
+
     if (updateFields.length > 0) {
+      // Execute the update query
       await pool.query(`UPDATE ${TABLE.CLIENTS_TABLE} SET ${updateFields} WHERE id = ?`, [...updateValues, id]);
     }
-    
 
     // Handle amenities
     if (Array.isArray(amenities) && amenities.length) {
+      // Delete existing amenities for the client
       await pool.query(`DELETE FROM ${TABLE.CLIENT_AMENITIES_TABLE} WHERE customer_id = ?`, [id]);
-      const valuesString = amenities.map(amenityId => `(?, ?)`).join(', ');
+
+      // Insert new amenities
+      const valuesString = amenities.map(() => `(?, ?)`).join(', ');
       const values = amenities.flatMap(amenityId => [id, amenityId]);
       const sql = `INSERT INTO ${TABLE.CLIENT_AMENITIES_TABLE} (customer_id, amenities_id) VALUES ${valuesString}`;
       await pool.query(sql, values);
     }
+
     res.status(200).json({ message: 'Client updated successfully', status: true });
   } catch (error) {
     console.error('Error updating client:', error);
     res.status(500).json({ message: 'Server error', status: 'error' });
-  } finally {
   }
 });
+
 
 // Delete a client
 router.delete('/:id', async (req, res) => {
