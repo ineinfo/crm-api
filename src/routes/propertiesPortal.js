@@ -90,7 +90,7 @@ router.get('/:id?', async (req, res) => {
   const id = req.params.id;
   try {
     // Base query with condition to get only properties with status = 1
-    const baseQuery = `SELECT * FROM ${TABLE.DEVELOPERS_TABLE} WHERE status = 1`;
+    const baseQuery = `SELECT * FROM ${TABLE.DEVELOPERS_TABLE} WHERE status != 0`;
     const condition = id ? ` AND id = ?` : '';
     const propertyQuery = baseQuery + condition;
     console.log('propertyQuerypropertyQuery',propertyQuery);
