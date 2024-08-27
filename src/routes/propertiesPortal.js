@@ -103,8 +103,8 @@ router.get('/:id?', async (req, res) => {
 
     // Retrieve images and amenities for each property
     const propertiesWithExtras = await Promise.all(propertyResult.map(async property => {
-      const [images] = await pool.query(`SELECT images_url FROM ${TABLE.PROPERTY_IMAGES_TABLE} WHERE property_id = ?`, [property.id]);
-      const [amenities] = await pool.query(`SELECT amenities_id FROM ${TABLE.PROPERTY_AMENITIES_TABLE} WHERE property_id = ?`, [property.id]);
+      const [images] = await pool.query(`SELECT images_url FROM ${TABLE.DEVELOPERS_IMAGES_TABLE} WHERE property_id = ?`, [property.id]);
+      const [amenities] = await pool.query(`SELECT amenities_id FROM ${TABLE.DEVELOPERS_AMENITIES_TABLE} WHERE property_id = ?`, [property.id]);
 
       return {
         ...property,
@@ -163,17 +163,17 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     const newFileUrls = (req.files || []).map(file => `${req.protocol}://${req.get('host')}/propertyimages/${file.filename}`);
     const allImages = [...images, ...newFileUrls]; // Combine existing and new URLs
     if (images.length) {
-      await pool.query(`DELETE FROM ${TABLE.PROPERTY_IMAGES_TABLE} WHERE property_id = ? AND images_url NOT IN (?)`, [id, allImages]);
+      await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_IMAGES_TABLE} WHERE property_id = ? AND images_url NOT IN (?)`, [id, allImages]);
     }
     if (newFileUrls.length) {
-      await pool.query(`INSERT INTO ${TABLE.PROPERTY_IMAGES_TABLE} (property_id, images_url) VALUES ?`, [newFileUrls.map(url => [id, url])]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_IMAGES_TABLE} (property_id, images_url) VALUES ?`, [newFileUrls.map(url => [id, url])]);
     }
 
     // Update amenities
     const amenityValues = Array.isArray(amenities) ? amenities.map(a => [id, a]) : [];
     if (amenityValues.length) {
-      await pool.query(`DELETE FROM ${TABLE.PROPERTY_AMENITIES_TABLE} WHERE property_id = ?`, [id]);
-      await pool.query(`INSERT INTO ${TABLE.PROPERTY_AMENITIES_TABLE} (property_id, amenities_id) VALUES ?`, [amenityValues]);
+      await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_AMENITIES_TABLE} WHERE property_id = ?`, [id]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_AMENITIES_TABLE} (property_id, amenities_id) VALUES ?`, [amenityValues]);
     }
 
     const [updatedRecord] = await pool.query(`SELECT * FROM ${TABLE.DEVELOPERS_TABLE} WHERE id = ?`, [id]);
