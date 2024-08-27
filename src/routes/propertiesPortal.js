@@ -5,6 +5,8 @@ const path = require('path');
 const pool = require('../utils/db');
 const TABLE = require('../utils/tables');
 const router = express.Router();
+const authenticateToken = require('../utils/middleware');
+
 
 // Configure multer for file storage
 const storage = multer.diskStorage({
@@ -20,54 +22,60 @@ const storage = multer.diskStorage({
 // Middleware setup
 const upload = multer({ storage: storage });
 
-router.post('/', upload.array('files'), async (req, res) => {
+router.post('/',authenticateToken, upload.array('files'), async (req, res) => {
+  console.log('reqreq',req.body);
   const {
-    property_name,
-    property_type_id,
-    carpet_area,
+    developer_name,
     location,
-    facing,
-    amount_total,
-    no_of_bhk,
-    floor,
-    is_furnished,
+    starting_price,
+    number_of_bathrooms,
+    property_type_id,
+    handover_date,
+    sqft_starting_size,
+    parking,
+    furnished,
+    account_type,
+    leasehold_length,
     owner_name,
-    construction_year,
-    property_business_type,
     amenities = []
   } = req.body;
 
+  
+  const user_id = req.user.id;
   // Convert amenities to an array if it's a string
   const amenitiesArray = Array.isArray(amenities) ? amenities : JSON.parse(amenities || '[]');
 
-  if (!property_name || !property_type_id || !amount_total) {
+  if (!developer_name || !property_type_id) {
     return res.status(400).json({ message: 'Required fields are missing', status: 'error' });
   }
+ 
+  const [day, month, year] = handover_date.split('-');
+  const formattedHandoverDate = `${year}-${month}-${day}`;
 
   try {
     // Insert property
     const [result] = await pool.query(
-      `INSERT INTO ${TABLE.PROPERTIES_TABLE} 
-       (property_name, property_type_id, carpet_area, location, facing, amount_total, no_of_bhk, floor, is_furnished, owner_name, construction_year, property_business_type) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [property_name, property_type_id, carpet_area, location, facing, amount_total, no_of_bhk, floor, is_furnished, owner_name, construction_year, property_business_type]
+      `INSERT INTO ${TABLE.DEVELOPERS_TABLE} 
+       (developer_name, location, starting_price, number_of_bathrooms, property_type_id, owner_name, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, user_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [developer_name, location, starting_price,number_of_bathrooms,property_type_id,owner_name, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, user_id]
     );
 
     const propertyId = result.insertId;
 
     // Handle amenities
     if (amenitiesArray.length > 0) {
-      const amenityValues = amenitiesArray.map(amenities_id => [propertyId, amenities_id]);
-      await pool.query(`INSERT INTO ${TABLE.PROPERTY_AMENITIES_TABLE} (property_id, amenities_id) VALUES ?`, [amenityValues]);
+      const amenityValues = amenitiesArray.map(amenities_id => [propertyId, amenities_id, user_id]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_AMENITIES_TABLE} (developer_id, amenities_id, user_id) VALUES ?`, [amenityValues]);
     }
 
     // Handle file uploads and store URLs
     const files = req.files || [];
     console.log("req.files", req.files);
-    const fileValues = files.map(file => [propertyId, `${req.protocol}://${req.get('host')}/propertyimages/${file.filename}`]);
+    const fileValues = files.map(file => [propertyId, `${req.protocol}://${req.get('host')}/propertyimages/${file.filename}`, user_id]);
 
     if (fileValues.length > 0) {
-      await pool.query(`INSERT INTO ${TABLE.PROPERTY_IMAGES_TABLE} (property_id, images_url) VALUES ?`, [fileValues]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_IMAGES_TABLE} (developer_id, images_url, user_id) VALUES ?`, [fileValues]);
     }
 
     res.status(201).json({ message: 'Property created successfully', status: true, propertyId });

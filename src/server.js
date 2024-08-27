@@ -23,7 +23,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors({
-  origin: 'http://localhost:3032', // Replace with your frontend's origin
+  origin: `${process.env.FRONTEND_URL}`,
   methods: 'GET,POST,PUT,DELETE',
   allowedHeaders: 'Content-Type,Authorization',
   exposedHeaders: 'Content-Length,X-Kuma-Revision',
