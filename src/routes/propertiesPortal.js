@@ -90,7 +90,7 @@ router.get('/:id?', async (req, res) => {
   const id = req.params.id;
   try {
     // Base query with condition to get only properties with status = 1
-    const baseQuery = `SELECT * FROM ${TABLE.PROPERTIES_TABLE} WHERE status = 1`;
+    const baseQuery = `SELECT * FROM ${TABLE.DEVELOPERS_TABLE} WHERE status = 1`;
     const condition = id ? ` AND id = ?` : '';
     const propertyQuery = baseQuery + condition;
 
@@ -148,7 +148,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
 
   try {
     // Check if the property exists
-    const [property] = await pool.query(`SELECT id FROM ${TABLE.PROPERTIES_TABLE} WHERE id = ?`, [id]);
+    const [property] = await pool.query(`SELECT id FROM ${TABLE.DEVELOPERS_TABLE} WHERE id = ?`, [id]);
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
@@ -156,7 +156,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     const updateQuery = Object.keys(updates).filter(key => updates[key]).map(key => `${key} = ?`).join(', ');
 
     if (updateQuery) {
-      await pool.query(`UPDATE ${TABLE.PROPERTIES_TABLE} SET ${updateQuery} WHERE id = ?`, [...Object.values(updates).filter(v => v), id]);
+      await pool.query(`UPDATE ${TABLE.DEVELOPERS_TABLE} SET ${updateQuery} WHERE id = ?`, [...Object.values(updates).filter(v => v), id]);
     }
 
     // Update images
@@ -176,7 +176,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
       await pool.query(`INSERT INTO ${TABLE.PROPERTY_AMENITIES_TABLE} (property_id, amenities_id) VALUES ?`, [amenityValues]);
     }
 
-    const [updatedRecord] = await pool.query(`SELECT * FROM ${TABLE.PROPERTIES_TABLE} WHERE id = ?`, [id]);
+    const [updatedRecord] = await pool.query(`SELECT * FROM ${TABLE.DEVELOPERS_TABLE} WHERE id = ?`, [id]);
     res.status(200).json({ data: updatedRecord, message: 'Property updated successfully', status: true });
   } catch (error) {
     console.error('Error updating property:', error);
@@ -189,7 +189,7 @@ router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query(`UPDATE ${TABLE.PROPERTIES_TABLE} SET status = 2 WHERE id = ?`, [id]);
+    const [result] = await pool.query(`UPDATE ${TABLE.DEVELOPERS_TABLE} SET status = 2 WHERE id = ?`, [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Property not found', status: 'error' });
