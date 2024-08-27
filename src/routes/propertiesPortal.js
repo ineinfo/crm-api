@@ -93,7 +93,7 @@ router.get('/:id?', async (req, res) => {
     const baseQuery = `SELECT * FROM ${TABLE.DEVELOPERS_TABLE} WHERE status = 1`;
     const condition = id ? ` AND id = ?` : '';
     const propertyQuery = baseQuery + condition;
-
+    console.log('propertyQuerypropertyQuery',propertyQuery);
     // Fetch properties based on whether an ID is provided
     const [propertyResult] = id ? await pool.query(propertyQuery, [id]) : await pool.query(propertyQuery);
 
