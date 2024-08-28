@@ -192,7 +192,7 @@ router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [result] = await pool.query(`UPDATE ${TABLE.DEVELOPERS_TABLE} SET status = 2 WHERE id = ?`, [id]);
+    const [result] = await pool.query(`UPDATE ${TABLE.DEVELOPERS_TABLE} SET status = 0 WHERE id = ?`, [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Property not found', status: 'error' });
