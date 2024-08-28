@@ -129,19 +129,23 @@ router.get('/:id?', async (req, res) => {
 router.put('/:id', upload.array('files'), async (req, res) => {
   const { id } = req.params;
   const {
-    property_name,
+    developer_name,
     property_type_id,
-    carpet_area,
+    starting_price,
     location,
-    facing,
+    number_of_bathrooms,
     amount_total,
     no_of_bhk,
-    floor,
-    is_furnished,
+    sqft_starting_size,
     owner_name,
-    construction_year,
+    parking,
+    furnished,
+    account_type,
+    leasehold_length,
+    formattedHandoverDate,
     status,
     property_business_type,
+    user_id,
     amenities = [],
     images = [] // Existing image URLs
   } = req.body;
@@ -152,7 +156,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    const updates = { property_name, property_type_id, carpet_area, location, facing, amount_total, no_of_bhk, floor, is_furnished, owner_name, construction_year, status, property_business_type };
+    const updates = { developer_name, property_type_id,  starting_price, location,  number_of_bathrooms, amount_total, no_of_bhk, sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, formattedHandoverDate,property_business_type,user_id };
     const updateQuery = Object.keys(updates).filter(key => updates[key]).map(key => `${key} = ?`).join(', ');
 
     if (updateQuery) {
@@ -163,17 +167,17 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     const newFileUrls = (req.files || []).map(file => `${req.protocol}://${req.get('host')}/propertyimages/${file.filename}`);
     const allImages = [...images, ...newFileUrls]; // Combine existing and new URLs
     if (images.length) {
-      await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_IMAGES_TABLE} WHERE property_id = ? AND images_url NOT IN (?)`, [id, allImages]);
+      await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_IMAGES_TABLE} WHERE developer_id = ? AND images_url NOT IN (?)`, [id, allImages]);
     }
     if (newFileUrls.length) {
-      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_IMAGES_TABLE} (property_id, images_url) VALUES ?`, [newFileUrls.map(url => [id, url])]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_IMAGES_TABLE} (developer_id, images_url) VALUES ?`, [newFileUrls.map(url => [id, url])]);
     }
 
     // Update amenities
     const amenityValues = Array.isArray(amenities) ? amenities.map(a => [id, a]) : [];
     if (amenityValues.length) {
-      await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_AMENITIES_TABLE} WHERE property_id = ?`, [id]);
-      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_AMENITIES_TABLE} (property_id, amenities_id) VALUES ?`, [amenityValues]);
+      await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_AMENITIES_TABLE} WHERE developer_id = ?`, [id]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_AMENITIES_TABLE} (developer_id, amenities_id) VALUES ?`, [amenityValues]);
     }
 
     const [updatedRecord] = await pool.query(`SELECT * FROM ${TABLE.DEVELOPERS_TABLE} WHERE id = ?`, [id]);
