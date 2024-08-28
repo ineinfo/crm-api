@@ -134,7 +134,6 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     starting_price,
     location,
     number_of_bathrooms,
-    amount_total,
     no_of_bhk,
     sqft_starting_size,
     owner_name,
@@ -156,7 +155,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    const updates = { developer_name, property_type_id,  starting_price, location,  number_of_bathrooms, amount_total, no_of_bhk, sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, formattedHandoverDate,property_business_type,user_id };
+    const updates = { developer_name, property_type_id,  starting_price, location,  number_of_bathrooms, no_of_bhk, sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, formattedHandoverDate,property_business_type,user_id };
     const updateQuery = Object.keys(updates).filter(key => updates[key]).map(key => `${key} = ?`).join(', ');
 
     if (updateQuery) {
