@@ -10,6 +10,9 @@ const amenitiesPortal = require('./routes/amenitiesPortal'); // amenities path
 const propertypePortal = require('./routes/propertypePortal'); // amenities path
 const propertiesPortal = require('./routes/propertiesPortal'); // amenities path
 const leadPortal = require('./routes/leadPortal'); // amenities path
+const countryPortal = require('./routes/countriesPortal'); // Country path
+const statePortal = require('./routes/statesPortal'); // Country path
+
 const PORT = process.env.PORT || 3000;
 const app = express();
 const bodyParser = require('body-parser');
@@ -43,6 +46,9 @@ app.use('/properties', propertiesPortal);
 app.use('/users', usersPortal);
 app.use('/clients', clientsPortal);
 app.use('/leads', leadPortal);
+app.use('/country', countryPortal);
+app.use('/state', statePortal);
+
 
 app.get('/', (req, res) => {
   res.send('Hello, World!');

@@ -10,6 +10,10 @@ const TABLES = {
     DEVELOPERS_TABLE: 'developers',
     DEVELOPERS_AMENITIES_TABLE:'developers_amenities',
     DEVELOPERS_IMAGES_TABLE:'developers_media',
+    COUNTRY_TABLE:'countries',
+    STATES_TABLE:'states',
+    CITIES_TABLE:'cities',
+
     
 }
 module.exports = TABLES;
