@@ -36,6 +36,8 @@ router.post('/',authenticateToken, upload.array('files'), async (req, res) => {
     furnished,
     account_type,
     leasehold_length,
+    email,
+    phone_number,
     owner_name,
     amenities = []
   } = req.body;
@@ -49,6 +51,20 @@ router.post('/',authenticateToken, upload.array('files'), async (req, res) => {
     return res.status(400).json({ message: 'Required fields are missing', status: 'error' });
   }
  
+  if(email) {
+    const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    if(!emailRegexp.test(email)) {
+      return res.status(400).json({ message: 'Please provide valid email', status: 'error' });
+    }
+  }
+
+  if(phone_number) {
+    let isnum = /^\d+$/.test(phone_number);
+    if(!isnum) {
+      return res.status(400).json({ message: 'Please provide valid phone', status: 'error' });
+    }
+  }
+
   const [day, month, year] = handover_date.split('-');
   const formattedHandoverDate = `${year}-${month}-${day}`;
 
@@ -56,9 +72,9 @@ router.post('/',authenticateToken, upload.array('files'), async (req, res) => {
     // Insert property
     const [result] = await pool.query(
       `INSERT INTO ${TABLE.DEVELOPERS_TABLE} 
-       (developer_name, location, starting_price, number_of_bathrooms, property_type_id, owner_name, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, user_id) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [developer_name, location, starting_price,number_of_bathrooms,property_type_id,owner_name, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, user_id]
+       (developer_name, location, starting_price, number_of_bathrooms, property_type_id, owner_name, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number, user_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [developer_name, location, starting_price,number_of_bathrooms,property_type_id,owner_name, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number, user_id]
     );
 
     const propertyId = result.insertId;
@@ -68,6 +84,8 @@ router.post('/',authenticateToken, upload.array('files'), async (req, res) => {
       const amenityValues = amenitiesArray.map(amenities_id => [propertyId, amenities_id, user_id]);
       await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_AMENITIES_TABLE} (developer_id, amenities_id, user_id) VALUES ?`, [amenityValues]);
     }
+
+    
 
     // Handle file uploads and store URLs
     const files = req.files || [];
@@ -145,9 +163,25 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     status,
     property_business_type,
     user_id,
+    email,
+    phone_number,
     amenities = [],
     images = [] // Existing image URLs
   } = req.body;
+
+  if(email) {
+    const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    if(!emailRegexp.test(email)) {
+      return res.status(400).json({ message: 'Please provide valid email', status: 'error' });
+    }
+  }
+
+  if(phone_number) {
+    let isnum = /^\d+$/.test(phone_number);
+    if(!isnum) {
+      return res.status(400).json({ message: 'Please provide valid phone', status: 'error' });
+    }
+  }
 
   try {
     // Check if the property exists
@@ -155,7 +189,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    const updates = { developer_name, property_type_id,  starting_price, location,  number_of_bathrooms, sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, formattedHandoverDate, user_id };
+    const updates = { developer_name, property_type_id,  starting_price, location,  number_of_bathrooms, sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, formattedHandoverDate, email, phone_number, user_id };
     const updateQuery = Object.keys(updates).filter(key => updates[key]).map(key => `${key} = ?`).join(', ');
 
     if (updateQuery) {
