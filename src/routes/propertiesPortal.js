@@ -51,6 +51,10 @@ router.post('/',authenticateToken, upload.array('files'), async (req, res) => {
     return res.status(400).json({ message: 'Required fields are missing', status: 'error' });
   }
  
+  if(!email) {
+    return res.status(400).json({ message: 'Please provide email', status: 'error' });
+  }
+
   if(email) {
     const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     if(!emailRegexp.test(email)) {
@@ -58,6 +62,9 @@ router.post('/',authenticateToken, upload.array('files'), async (req, res) => {
     }
   }
 
+  if(!phone_number) {
+    return res.status(400).json({ message: 'Please provide phone', status: 'error' });
+  }
   if(phone_number) {
     let isnum = /^\d+$/.test(phone_number);
     if(!isnum) {
@@ -169,6 +176,9 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     images = [] // Existing image URLs
   } = req.body;
 
+  if(!email) {
+    return res.status(400).json({ message: 'Please provide email', status: 'error' });
+  }
   if(email) {
     const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     if(!emailRegexp.test(email)) {
@@ -176,6 +186,9 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     }
   }
 
+  if(!phone_number) {
+    return res.status(400).json({ message: 'Please provide phone', status: 'error' });
+  }
   if(phone_number) {
     let isnum = /^\d+$/.test(phone_number);
     if(!isnum) {
