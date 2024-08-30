@@ -36,20 +36,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // app.use(cors());
 
-const allowedOrigins = [
-  'http://crmfront.us-accuweb.cloud:3000',
-  process.env.FRONTEND_URL
-];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
+  origin: process.env.FRONTEND_URL,
+  methods: 'GET,POST,PUT,DELETE,OPTIONS', // Specify allowed methods
+  allowedHeaders: 'Content-Type,Authorization' // Specify allowed headers
 }));
+
+
 app.use(express.json());
 
 // Use the auth routes for any requests starting with /auth
