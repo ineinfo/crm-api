@@ -166,7 +166,7 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     furnished,
     account_type,
     leasehold_length,
-    formattedHandoverDate,
+    handover_date,
     status,
     property_business_type,
     user_id,
@@ -175,6 +175,13 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     amenities = [],
     images = [] // Existing image URLs
   } = req.body;
+
+  let formattedHandoverDate;
+  
+  if(handover_date) {
+    const [day, month, year] = handover_date.split('-');
+    formattedHandoverDate = `${year}-${month}-${day}`;
+  }
 
   if(!email) {
     return res.status(400).json({ message: 'Please provide email', status: 'error' });
@@ -202,7 +209,9 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    const updates = { developer_name, property_type_id,  starting_price, location,  number_of_bathrooms, sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, formattedHandoverDate, email, phone_number, user_id };
+    let updates = { developer_name, property_type_id,  starting_price, location,  number_of_bathrooms, sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, handover_date:formattedHandoverDate, email, phone_number, user_id };
+    
+    
     const updateQuery = Object.keys(updates).filter(key => updates[key]).map(key => `${key} = ?`).join(', ');
 
     if (updateQuery) {
