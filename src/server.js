@@ -25,16 +25,31 @@ app.use('/propertyimages', express.static(path.join(__dirname, '../public/proper
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(cors({
-  origin: `${process.env.FRONTEND_URL}`,
-  methods: 'GET,POST,PUT,DELETE',
-  allowedHeaders: 'Content-Type,Authorization',
-  exposedHeaders: 'Content-Length,X-Kuma-Revision',
-  credentials: true,
-  maxAge: 600
-}));
+// app.use(cors({
+//   origin: `${process.env.FRONTEND_URL}`,
+//   methods: 'GET,POST,PUT,DELETE',
+//   allowedHeaders: 'Content-Type,Authorization',
+//   exposedHeaders: 'Content-Length,X-Kuma-Revision',
+//   credentials: true,
+//   maxAge: 600
+// }));
 
-app.use(cors());
+// app.use(cors());
+
+const allowedOrigins = [
+  'http://crmfront.us-accuweb.cloud:3000',
+  process.env.FRONTEND_URL
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
 app.use(express.json());
 
 // Use the auth routes for any requests starting with /auth
