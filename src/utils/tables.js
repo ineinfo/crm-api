@@ -9,6 +9,12 @@ const TABLES = {
     PROPERTY_TYPE_TABLE: 'property_type',
     DEVELOPERS_TABLE: 'developers',
     DEVELOPERS_AMENITIES_TABLE:'developers_amenities',
+    DEVELOPERS_NOOFBATHROOM_TABLE:'developers_number_of_bathrooms',
+    DEVELOPERS_PROPERTY_TYPES_TABLE:'developers_property_types',
+    DEVELOPERS_PARKING_OPTIONS_TABLE:'developers_parking_options',
+
+    
+
     DEVELOPERS_IMAGES_TABLE:'developers_media',
     COUNTRY_TABLE:'countries',
     STATES_TABLE:'states',

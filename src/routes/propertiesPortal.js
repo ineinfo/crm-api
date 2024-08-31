@@ -22,14 +22,15 @@ const storage = multer.diskStorage({
 // Middleware setup
 const upload = multer({ storage: storage });
 
-router.post('/',authenticateToken, upload.array('files'), async (req, res) => {
-  console.log('reqreq',req.body);
+router.post('/',authenticateToken, upload.fields([
+  { name: 'files', maxCount: 10 }, 
+  { name: 'documents', maxCount: 10 } 
+]), async (req, res) => {
+
   const {
     developer_name,
     location,
     starting_price,
-    number_of_bathrooms,
-    property_type_id,
     handover_date,
     sqft_starting_size,
     parking,
@@ -39,15 +40,26 @@ router.post('/',authenticateToken, upload.array('files'), async (req, res) => {
     email,
     phone_number,
     owner_name,
-    amenities = []
+    state_id,
+    city_id,
+    pincode,
+    service_charges,
+    property_type_ids = [],
+    number_of_bathrooms = [],
+    amenities = [],
+    parking_options = []
   } = req.body;
 
   
   const user_id = req.user.id;
   // Convert amenities to an array if it's a string
   const amenitiesArray = Array.isArray(amenities) ? amenities : JSON.parse(amenities || '[]');
+  const numberOfBathroomsArray = Array.isArray(number_of_bathrooms) ? number_of_bathrooms : JSON.parse(number_of_bathrooms || '[]');
+  const property_type_id_array = Array.isArray(property_type_ids) ? property_type_ids : JSON.parse(property_type_ids || '[]');
+  const parking_options_array = Array.isArray(parking_options) ? parking_options : JSON.parse(parking_options || '[]');
+  
 
-  if (!developer_name || !property_type_id) {
+  if (!developer_name) {
     return res.status(400).json({ message: 'Required fields are missing', status: 'error' });
   }
  
@@ -79,9 +91,9 @@ router.post('/',authenticateToken, upload.array('files'), async (req, res) => {
     // Insert property
     const [result] = await pool.query(
       `INSERT INTO ${TABLE.DEVELOPERS_TABLE} 
-       (developer_name, location, starting_price, number_of_bathrooms, property_type_id, owner_name, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number, user_id) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [developer_name, location, starting_price,number_of_bathrooms,property_type_id,owner_name, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number, user_id]
+       (developer_name, location, starting_price, owner_name, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode, user_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)`,
+      [developer_name, location, starting_price,owner_name, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges, state_id, city_id, pincode, user_id]
     );
 
     const propertyId = result.insertId;
@@ -92,15 +104,38 @@ router.post('/',authenticateToken, upload.array('files'), async (req, res) => {
       await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_AMENITIES_TABLE} (developer_id, amenities_id, user_id) VALUES ?`, [amenityValues]);
     }
 
+    // Handle Number of Bathrooms
+    if (numberOfBathroomsArray.length > 0) {
+      const amenityValues = numberOfBathroomsArray.map(no_of_bathrooms => [propertyId, no_of_bathrooms, user_id]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_NOOFBATHROOM_TABLE} (developer_id, no_of_bathrooms, user_id) VALUES ?`, [amenityValues]);
+    }
+
+    // Handle property type 
+    if (property_type_id_array.length > 0) {
+      const amenityValues = property_type_id_array.map(property_type_id => [propertyId, property_type_id, user_id]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_PROPERTY_TYPES_TABLE} (developer_id, property_type_id, user_id) VALUES ?`, [amenityValues]);
+    }
+
+    // Handle property type 
+    if (parking_options_array.length > 0) {
+      const amenityValues = parking_options_array.map(options => [propertyId, options, user_id]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_PARKING_OPTIONS_TABLE} (developer_id, parking_option_id, user_id) VALUES ?`, [amenityValues]);
+    }
+
     
 
     // Handle file uploads and store URLs
-    const files = req.files || [];
-    console.log("req.files", req.files);
-    const fileValues = files.map(file => [propertyId, `${req.protocol}://${req.get('host')}/propertyimages/${file.filename}`, user_id]);
-
+    const filesArray = req.files['files'] || [];
+    const fileValues = filesArray.map(file => [propertyId, `${req.protocol}://${req.get('host')}/propertyimages/${file.filename}`,'images', user_id]);
     if (fileValues.length > 0) {
-      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_IMAGES_TABLE} (developer_id, images_url, user_id) VALUES ?`, [fileValues]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_IMAGES_TABLE} (developer_id, images_url,file_type, user_id) VALUES ?`, [fileValues]);
+    }
+
+    // handle documents of pdf 
+    const documentsArray = req.files['documents'] || []; 
+    const documentsValues = documentsArray.map(file => [propertyId, `${req.protocol}://${req.get('host')}/propertydocuments/${file.filename}`,'document', user_id]);
+    if (documentsValues.length > 0) {
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_IMAGES_TABLE} (developer_id, images_url,file_type, user_id) VALUES ?`, [documentsValues]);
     }
 
     res.status(201).json({ message: 'Property created successfully', status: true, propertyId });
@@ -151,15 +186,16 @@ router.get('/:id?', async (req, res) => {
 });
 
 
-router.put('/:id', upload.array('files'), async (req, res) => {
+router.put('/:id', authenticateToken,upload.fields([
+  { name: 'files', maxCount: 10 }, 
+  { name: 'documents', maxCount: 10 } 
+]), async (req, res) => {
   const { id } = req.params;
   const {
     developer_name,
     property_type_id,
     starting_price,
     location,
-    number_of_bathrooms,
-    no_of_bhk,
     sqft_starting_size,
     owner_name,
     parking,
@@ -167,17 +203,22 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     account_type,
     leasehold_length,
     handover_date,
-    status,
-    property_business_type,
-    user_id,
     email,
     phone_number,
+    images = [], // Existing image URLs
+    state_id,
+    city_id,
+    pincode,
+    service_charges,
+    property_type_ids = [],
+    number_of_bathrooms = [],
     amenities = [],
-    images = [] // Existing image URLs
+    parking_options = []
   } = req.body;
 
   let formattedHandoverDate;
   
+  const user_id = req.user.id;
   if(handover_date) {
     const [day, month, year] = handover_date.split('-');
     formattedHandoverDate = `${year}-${month}-${day}`;
@@ -203,13 +244,18 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     }
   }
 
+  const numberOfBathroomsArray = Array.isArray(number_of_bathrooms) ? number_of_bathrooms : JSON.parse(number_of_bathrooms || '[]');
+  const property_type_id_array = Array.isArray(property_type_ids) ? property_type_ids : JSON.parse(property_type_ids || '[]');
+  const parking_options_array = Array.isArray(parking_options) ? parking_options : JSON.parse(parking_options || '[]');
+  
+
   try {
     // Check if the property exists
     const [property] = await pool.query(`SELECT id FROM ${TABLE.DEVELOPERS_TABLE} WHERE id = ?`, [id]);
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    let updates = { developer_name, property_type_id,  starting_price, location,  number_of_bathrooms, sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, handover_date:formattedHandoverDate, email, phone_number, user_id };
+    let updates = { developer_name,  starting_price, location,  sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, handover_date:formattedHandoverDate, email, phone_number,service_charges, state_id, city_id, pincode, user_id };
     
     
     const updateQuery = Object.keys(updates).filter(key => updates[key]).map(key => `${key} = ?`).join(', ');
@@ -233,6 +279,28 @@ router.put('/:id', upload.array('files'), async (req, res) => {
     if (amenityValues.length) {
       await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_AMENITIES_TABLE} WHERE developer_id = ?`, [id]);
       await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_AMENITIES_TABLE} (developer_id, amenities_id) VALUES ?`, [amenityValues]);
+    }
+
+
+    // Handle Number of Bathrooms
+    if (numberOfBathroomsArray.length > 0) {
+      await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_NOOFBATHROOM_TABLE} WHERE developer_id = ?`, [id]);
+      const amenityValues = numberOfBathroomsArray.map(no_of_bathrooms => [id, no_of_bathrooms, user_id]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_NOOFBATHROOM_TABLE} (developer_id, no_of_bathrooms, user_id) VALUES ?`, [amenityValues]);
+    }
+
+    // Handle property type 
+    if (property_type_id_array.length > 0) {
+      await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_PROPERTY_TYPES_TABLE} WHERE developer_id = ?`, [id]);
+      const amenityValues = property_type_id_array.map(property_type_id => [id, property_type_id, user_id]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_PROPERTY_TYPES_TABLE} (developer_id, property_type_id, user_id) VALUES ?`, [amenityValues]);
+    }
+
+    // Handle property type 
+    if (parking_options_array.length > 0) {
+      await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_PARKING_OPTIONS_TABLE} WHERE developer_id = ?`, [id]);
+      const amenityValues = parking_options_array.map(options => [id, options, user_id]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_PARKING_OPTIONS_TABLE} (developer_id, parking_option_id, user_id) VALUES ?`, [amenityValues]);
     }
 
     const [updatedRecord] = await pool.query(`SELECT * FROM ${TABLE.DEVELOPERS_TABLE} WHERE id = ?`, [id]);
