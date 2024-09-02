@@ -12,6 +12,7 @@ const propertiesPortal = require('./routes/propertiesPortal'); // amenities path
 const leadPortal = require('./routes/leadPortal'); // amenities path
 const countryPortal = require('./routes/countriesPortal'); // Country path
 const statePortal = require('./routes/statesPortal'); // Country path
+const citiesPortal = require('./routes/citiesPortal'); // Country path
 const parkingTypePortal = require('./routes/parkingTypePortal'); // Country path
 
 const PORT = process.env.PORT || 3000;
@@ -57,6 +58,7 @@ app.use('/clients', clientsPortal);
 app.use('/leads', leadPortal);
 app.use('/country', countryPortal);
 app.use('/state', statePortal);
+app.use('/cities', citiesPortal);
 app.use('/parkingtype', parkingTypePortal);
 
 
