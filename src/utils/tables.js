@@ -12,6 +12,7 @@ const TABLES = {
     DEVELOPERS_NOOFBATHROOM_TABLE:'developers_number_of_bathrooms',
     DEVELOPERS_PROPERTY_TYPES_TABLE:'developers_property_types',
     DEVELOPERS_PARKING_OPTIONS_TABLE:'developers_parking_options',
+    PARKING_TYPES_TABLE:'partking_types',
 
     
 
