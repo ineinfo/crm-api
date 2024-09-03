@@ -47,9 +47,10 @@ router.post('/',authenticateToken, upload.fields([
     property_type = [],
     number_of_bathrooms = [],
     amenities = [],
-    parking_options = []
+    parking_option = []
   } = req.body;
   let property_type_ids = property_type;
+  let parking_options = parking_option;
 
   
   const user_id = req.user.id;
@@ -220,9 +221,10 @@ router.put('/:id', authenticateToken,upload.fields([
     property_type = [],
     number_of_bathrooms = [],
     amenities = [],
-    parking_options = []
+    parking_option = []
   } = req.body;
   let property_type_ids = property_type;
+  let parking_options = parking_option;
 
   let formattedHandoverDate;
   
