@@ -273,7 +273,7 @@ router.put('/:id', authenticateToken,upload.fields([
     }
 
     // Update images
-    const newFileUrls = (req.files || []).map(file => `${req.protocol}://${req.get('host')}/propertyimages/${file.filename}`);
+    const newFileUrls = (req.files['files'] || []).map(file => `${req.protocol}://${req.get('host')}/propertyimages/${file.filename}`);
     const allImages = [...images, ...newFileUrls]; // Combine existing and new URLs
     if (images.length) {
       await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_IMAGES_TABLE} WHERE developer_id = ? AND images_url NOT IN (?)`, [id, allImages]);
