@@ -44,11 +44,12 @@ router.post('/',authenticateToken, upload.fields([
     city_id,
     pincode,
     service_charges,
-    property_type_ids = [],
+    property_type = [],
     number_of_bathrooms = [],
     amenities = [],
     parking_options = []
   } = req.body;
+  let property_type_ids = property_type;
 
   
   const user_id = req.user.id;
@@ -216,11 +217,12 @@ router.put('/:id', authenticateToken,upload.fields([
     city_id,
     pincode,
     service_charges,
-    property_type_ids = [],
+    property_type = [],
     number_of_bathrooms = [],
     amenities = [],
     parking_options = []
   } = req.body;
+  let property_type_ids = property_type;
 
   let formattedHandoverDate;
   
