@@ -13,6 +13,7 @@ const TABLES = {
     DEVELOPERS_PROPERTY_TYPES_TABLE:'developers_property_types',
     DEVELOPERS_PARKING_OPTIONS_TABLE:'developers_parking_options',
     PARKING_TYPES_TABLE:'partking_types',
+    COUNCIL_TAX_BAND_TABLE:'council_tax_band',
 
     
 
