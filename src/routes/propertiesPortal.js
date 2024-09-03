@@ -165,7 +165,7 @@ router.get('/:id?', async (req, res) => {
     const propertiesWithExtras = await Promise.all(propertyResult.map(async property => {
       const [images] = await pool.query(`SELECT images_url FROM ${TABLE.DEVELOPERS_IMAGES_TABLE} WHERE developer_id = ?`, [property.id]);
       const [amenities] = await pool.query(`SELECT amenities_id FROM ${TABLE.DEVELOPERS_AMENITIES_TABLE} WHERE developer_id = ?`, [property.id]);
-      const [property_type] = await pool.query(`SELECT property_type_id FROM ${TABLE.PROPERTY_TYPE_TABLE} WHERE developer_id = ?`, [property.id]);
+      const [property_type] = await pool.query(`SELECT property_type_id FROM ${TABLE.DEVELOPERS_PROPERTY_TYPES_TABLE} WHERE developer_id = ?`, [property.id]);
       const [no_of_bathrooms] = await pool.query(`SELECT no_of_bathrooms FROM ${TABLE.DEVELOPERS_NOOFBATHROOM_TABLE} WHERE developer_id = ?`, [property.id]);
       const [parking_option] = await pool.query(`SELECT parking_option_id FROM ${TABLE.DEVELOPERS_PARKING_OPTIONS_TABLE} WHERE developer_id = ?`, [property.id]);
 
