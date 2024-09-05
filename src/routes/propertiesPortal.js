@@ -48,6 +48,7 @@ router.post('/',authenticateToken, upload.fields([
     note,
     range_min,
     range_max,
+    property_status,
     property_type = [],
     number_of_bathrooms = [],
     amenities = [],
@@ -97,9 +98,9 @@ router.post('/',authenticateToken, upload.fields([
     // Insert property
     const [result] = await pool.query(
       `INSERT INTO ${TABLE.DEVELOPERS_TABLE} 
-       (developer_name, location, starting_price, owner_name, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode,council_tax_band,note,range_min,range_max, user_id) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?)`,
-      [developer_name, location, starting_price,owner_name, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max,user_id]
+       (developer_name, location, starting_price, owner_name, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?, ?)`,
+      [developer_name, location, starting_price,owner_name, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max, property_status,user_id]
     );
 
     const propertyId = result.insertId;
@@ -226,6 +227,7 @@ router.put('/:id', authenticateToken,upload.fields([
     note,
     range_min,
     range_max,
+    property_status,
     property_type = [],
     number_of_bathrooms = [],
     amenities = [],
@@ -273,7 +275,7 @@ router.put('/:id', authenticateToken,upload.fields([
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    let updates = { developer_name,  starting_price, location,  sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, handover_date:formattedHandoverDate, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max, user_id };
+    let updates = { developer_name,  starting_price, location,  sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, handover_date:formattedHandoverDate, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id };
     
     
     const updateQuery = Object.keys(updates).filter(key => updates[key]).map(key => `${key} = ?`).join(', ');
