@@ -15,6 +15,8 @@ const statePortal = require('./routes/statesPortal'); // Country path
 const citiesPortal = require('./routes/citiesPortal'); // Country path
 const parkingTypePortal = require('./routes/parkingTypePortal'); // Country path
 const councilTaxBandPortal = require('./routes/councilTaxBandPortal'); // Country path
+const propertyStatusPortal = require('./routes/propertyStatusPortal'); // Country path
+
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -62,6 +64,8 @@ app.use('/state', statePortal);
 app.use('/cities', citiesPortal);
 app.use('/parkingtype', parkingTypePortal);
 app.use('/counciltaxband', councilTaxBandPortal);
+app.use('/propertystatus', propertyStatusPortal);
+
 
 
 
