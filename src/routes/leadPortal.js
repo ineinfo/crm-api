@@ -92,7 +92,7 @@ router.post('/',authenticateToken, upload.fields([
     }
   }
 
-  const formattedHandoverDate = '';
+  const formattedHandoverDate = null;
   if(handover_date) {
     const [day, month, year] = handover_date.split('-');
     formattedHandoverDate = `${year}-${month}-${day}`;
