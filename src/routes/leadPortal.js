@@ -68,7 +68,7 @@ router.post('/',authenticateToken, upload.fields([
   
 
   if (!developer_name) {
-    return res.status(400).json({ message: 'Required fields are missing', status: 'error' });
+    return res.status(400).json({ message: 'Name fields are missing', status: 'error' });
   }
  
   if(!email) {
@@ -92,9 +92,12 @@ router.post('/',authenticateToken, upload.fields([
     }
   }
 
-  const [day, month, year] = handover_date.split('-');
-  const formattedHandoverDate = `${year}-${month}-${day}`;
-
+  const formattedHandoverDate = '';
+  if(handover_date) {
+    const [day, month, year] = handover_date.split('-');
+    formattedHandoverDate = `${year}-${month}-${day}`;
+  }
+  
   try {
     // Insert property
     const [result] = await pool.query(
