@@ -29,6 +29,7 @@ router.post('/',authenticateToken, upload.fields([
 ]), async (req, res) => {
 
   const {
+    lead_type,
     developer_name,
     location,
     starting_price,
@@ -102,9 +103,9 @@ router.post('/',authenticateToken, upload.fields([
     // Insert property
     const [result] = await pool.query(
       `INSERT INTO ${TABLE.LEADS_TABLE} 
-       (developer_name, location, starting_price, finance, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?, ?)`,
-      [developer_name, location, starting_price,finance, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max, property_status,user_id]
+       (lead_type, developer_name, location, starting_price, finance, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?, ?)`,
+      [lead_type, developer_name, location, starting_price,finance, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max, property_status,user_id]
     );
 
     const leadId = result.insertId;
@@ -225,6 +226,7 @@ router.put('/:id', authenticateToken,upload.fields([
 ]), async (req, res) => {
   const { id } = req.params;
   const {
+    lead_type,
     developer_name,
     property_type_id,
     starting_price,
@@ -295,7 +297,7 @@ router.put('/:id', authenticateToken,upload.fields([
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    let updates = { developer_name,  starting_price, location,  sqft_starting_size, finance, parking, furnished,  account_type, leasehold_length, handover_date:formattedHandoverDate, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id };
+    let updates = { lead_type, developer_name,  starting_price, location,  sqft_starting_size, finance, parking, furnished,  account_type, leasehold_length, handover_date:formattedHandoverDate, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id };
     
     
     const updateQuery = Object.keys(updates).filter(key => updates[key]).map(key => `${key} = ?`).join(', ');
@@ -351,6 +353,34 @@ router.put('/:id', authenticateToken,upload.fields([
   }
 });
 
+
+router.get('/matchproperty/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const [existingRecord] = await pool.query(`SELECT * FROM ${TABLE.LEADS_TABLE} WHERE id = ?`, [id]);
+    if (existingRecord.length === 0) {
+      return res.status(404).json({ message: 'Record not found', status: false });
+    }
+
+    const parkingData = existingRecord[0].parking;
+    const locationData = existingRecord[0].location;
+    const state_idData = existingRecord[0].state_id;
+    const range_minData = existingRecord[0].range_min;
+    const starting_priceData = existingRecord[0].starting_price;
+
+    const [matchRecord] = await pool.query(`SELECT * FROM ${TABLE.DEVELOPERS_TABLE} WHERE parking = ? AND location = ? AND state_id = ? AND range_min = ? AND starting_price = ?`, [parkingData, locationData, state_idData, range_minData, starting_priceData]);
+
+    if (matchRecord.length === 0) {
+      return res.status(404).json({ message: 'No matching record found', status: false });
+    }
+
+    res.status(200).json({ data: matchRecord, message: 'Fetched successfully', status: true });
+  } catch (error) {
+    console.error('Error retrieving match:', error);
+    res.status(500).json({ message: 'Server error', status: 'error' });
+  }
+});
 
 
 
