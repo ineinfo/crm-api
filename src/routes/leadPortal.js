@@ -68,8 +68,8 @@ router.post('/',authenticateToken, upload.fields([
   const parking_options_array = Array.isArray(parking_options) ? parking_options : JSON.parse(parking_options || '[]');
   
 
-  if (!developer_name) {
-    return res.status(400).json({ message: 'Name fields are missing', status: 'error' });
+  if (!developer_name || !lead_type) {
+    return res.status(400).json({ message: 'Name and Type fields are missing', status: 'error' });
   }
  
   if(!email) {
