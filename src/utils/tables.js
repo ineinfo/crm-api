@@ -26,7 +26,7 @@ const TABLES = {
     COUNCIL_TAX_BAND_TABLE:'council_tax_band',
     PROPERTY_STATUS:'property_status',
 
-    
+    MATCH_PROPERTY_TABLE: 'match_property',
 
     
     COUNTRY_TABLE:'countries',

@@ -91,8 +91,11 @@ router.post('/',authenticateToken, upload.fields([
     }
   }
 
-  const [day, month, year] = handover_date.split('-');
-  const formattedHandoverDate = `${year}-${month}-${day}`;
+  let formattedHandoverDate = null;
+  if(handover_date) {
+    const [day, month, year] = handover_date.split('-');
+    formattedHandoverDate = `${year}-${month}-${day}`;
+  }
 
   try {
     // Insert property
