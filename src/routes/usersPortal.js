@@ -7,6 +7,7 @@ const pool = require('../utils/db');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const authenticateToken = require('../utils/middleware');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -123,23 +124,43 @@ router.put('/:id', upload.fields([{ name: 'avatarurl' }]), async (req, res) => {
       : existingAvatarUrl;
 
     // Build the SET clause and values
-    const fields = [first_name, last_name, email, mobile_number, role_id, newAvatarUrl];
-    const setClause = [
-      first_name ? 'first_name = ?' : null,
-      last_name ? 'last_name = ?' : null,
-      email ? 'email = ?' : null,
-      mobile_number ? 'mobile_number = ?' : null,
-      role_id ? 'role_id = ?' : null,
-      newAvatarUrl ? 'avatarurl = ?' : null
-    ].filter(Boolean).join(', ');
+    const fields = [];
+    const setClause = [];
 
-    if (!setClause) {
+    // Always add fields even if they are empty strings
+    if ('first_name' in req.body) {
+      setClause.push('first_name = ?');
+      fields.push(first_name || '');  // Default to empty string if undefined
+    }
+    if ('last_name' in req.body) {
+      setClause.push('last_name = ?');
+      fields.push(last_name || '');  // Default to empty string if undefined
+    }
+    if ('email' in req.body) {
+      setClause.push('email = ?');
+      fields.push(email || '');  // Default to empty string if undefined
+    }
+    if ('mobile_number' in req.body) {
+      setClause.push('mobile_number = ?');
+      fields.push(mobile_number || '');  // Default to empty string if undefined
+    }
+    if ('role_id' in req.body) {
+      setClause.push('role_id = ?');
+      fields.push(role_id || '');  // Default to empty string if undefined
+    }
+    if (newAvatarUrl) {
+      setClause.push('avatarurl = ?');
+      fields.push(newAvatarUrl);
+    }
+
+    if (setClause.length === 0) {
       return res.status(400).json({ message: 'No fields to update', status: 'error' });
     }
 
     fields.push(id); // Append the ID for the WHERE clause
 
-    const [result] = await pool.query(`UPDATE ${TABLE.USERS_TABLE} SET ${setClause} WHERE id = ?`, fields);
+    const query = `UPDATE ${TABLE.USERS_TABLE} SET ${setClause.join(', ')} WHERE id = ?`;
+    const [result] = await pool.query(query, fields);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'User not found', status: 'error' });
@@ -175,5 +196,79 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+
+function validatePassword(password) {
+  // Minimum length check
+  if (password.length < 9) {
+      return false;
+  }
+
+  // Uppercase, lowercase, and special characters check
+  const uppercaseRegex = /[A-Z]/;
+  const lowercaseRegex = /[a-z]/;
+  const specialCharactersRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+
+  const hasUppercase = uppercaseRegex.test(password);
+  const hasLowercase = lowercaseRegex.test(password);
+  const hasSpecialCharacters = specialCharactersRegex.test(password);
+
+  // Check if all conditions are met
+  return hasUppercase && hasLowercase && hasSpecialCharacters;
+}
+
+// Change Password
+router.post('/changepassword', authenticateToken, async (req, res) => {
+  try {
+    const id = req.user.id;
+    if (!id) {
+      return res.status(400).json({ message: 'User ID must be provided', status: 'error' });
+    }
+
+    const [existingRecordResults] = await pool.query(`SELECT * FROM ${TABLE.USERS_TABLE} WHERE id = ?`, [id]);
+    if (existingRecordResults.length === 0) {
+      return sendResponse(res, { error: ManageResponseStatus('notFound'), status: false }, 404);
+    }
+
+    const { current_password, new_password, confirm_password } = req.body;
+
+    // Field Validation
+    if (typeof current_password !== 'string' || typeof new_password !== 'string' || typeof confirm_password !== 'string') {
+      return res.status(400).json({ message: 'All fields must be string', status: 'error' });
+    }
+
+    if (!current_password || !new_password || !confirm_password) {
+      return res.status(400).json({ message: 'Current Password, New Password, and Confirm Password fields are required', status: 'error' });
+    }
+
+    // Validate the current password
+    const isCurrentPasswordValid = await bcrypt.compare(current_password, existingRecordResults[0].password);
+
+    if (!isCurrentPasswordValid) {
+      return res.status(401).json({ message: 'Current Password is Incorrect', status: 'error' });
+    }
+
+    // Password Validation
+    if (!validatePassword(new_password)) {
+      return res.status(400).json({ message: 'New Password must be at least 9 characters long and contain at least one uppercase letter, one lowercase letter, and one special character.', status: 'error' });
+    }
+
+    if (!validatePassword(confirm_password)) {
+      return res.status(400).json({ message: 'Confirm Password must be at least 9 characters long and contain at least one uppercase letter, one lowercase letter, and one special character.', status: 'error' });
+    }
+
+    if (new_password !== confirm_password) {
+      return res.status(400).json({ message: 'New Password and Confirm Password do not match.', status: 'error' });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    // Update the password in the database
+    await pool.query(`UPDATE ${TABLE.USERS_TABLE} SET password = ? WHERE id = ?`, [hashedPassword, id]);
+    return res.status(200).json({ message: 'Password Successfully Updated', status: true });
+  } catch (error) {
+    return res.status(500).json({ error: `Error occurred: ${error.message}`, status: 'error' });
+  }
+});
 
 module.exports = router;

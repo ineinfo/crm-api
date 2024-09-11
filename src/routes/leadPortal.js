@@ -23,9 +23,9 @@ const commonTitle = "Leads";
 // Middleware setup
 const upload = multer({ storage: storage });
 
-router.post('/',authenticateToken, upload.fields([
-  { name: 'files', maxCount: 10 }, 
-  { name: 'documents', maxCount: 10 } 
+router.post('/', authenticateToken, upload.fields([
+  { name: 'files', maxCount: 10 },
+  { name: 'documents', maxCount: 10 }
 ]), async (req, res) => {
 
   const {
@@ -59,53 +59,53 @@ router.post('/',authenticateToken, upload.fields([
   let property_type_ids = property_type;
   let parking_options = parking_option;
 
-  
+
   const user_id = req.user.id;
   // Convert amenities to an array if it's a string
   const amenitiesArray = Array.isArray(amenities) ? amenities : JSON.parse(amenities || '[]');
   const numberOfBathroomsArray = Array.isArray(number_of_bathrooms) ? number_of_bathrooms : JSON.parse(number_of_bathrooms || '[]');
   const property_type_id_array = Array.isArray(property_type_ids) ? property_type_ids : JSON.parse(property_type_ids || '[]');
   const parking_options_array = Array.isArray(parking_options) ? parking_options : JSON.parse(parking_options || '[]');
-  
+
 
   if (!developer_name || !lead_type) {
     return res.status(400).json({ message: 'Name and Type fields are missing', status: 'error' });
   }
- 
-  if(!email) {
+
+  if (!email) {
     return res.status(400).json({ message: 'Please provide email', status: 'error' });
   }
 
-  if(email) {
+  if (email) {
     const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    if(!emailRegexp.test(email)) {
+    if (!emailRegexp.test(email)) {
       return res.status(400).json({ message: 'Please provide valid email', status: 'error' });
     }
   }
 
-  if(!phone_number) {
+  if (!phone_number) {
     return res.status(400).json({ message: 'Please provide phone', status: 'error' });
   }
-  if(phone_number) {
+  if (phone_number) {
     let isnum = /^\d+$/.test(phone_number);
-    if(!isnum) {
+    if (!isnum) {
       return res.status(400).json({ message: 'Please provide valid phone', status: 'error' });
     }
   }
 
   let formattedHandoverDate = null;
-  if(handover_date) {
+  if (handover_date) {
     const [day, month, year] = handover_date.split('-');
     formattedHandoverDate = `${year}-${month}-${day}`;
   }
-  
+
   try {
     // Insert property
     const [result] = await pool.query(
       `INSERT INTO ${TABLE.LEADS_TABLE} 
        (lead_type, developer_name, location, starting_price, finance, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?, ?)`,
-      [lead_type, developer_name, location, starting_price,finance, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max, property_status,user_id]
+      [lead_type, developer_name, location, starting_price, finance, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, note, range_min, range_max, property_status, user_id]
     );
 
     const leadId = result.insertId;
@@ -134,25 +134,25 @@ router.post('/',authenticateToken, upload.fields([
       await pool.query(`INSERT INTO ${TABLE.LEADS_PARKING_OPTIONS_TABLE} (lead_id, parking_option_id, user_id) VALUES ?`, [amenityValues]);
     }
 
-    
+
 
     // Handle file uploads and store URLs
     const filesArray = req.files['files'] || [];
-    const fileValues = filesArray.map(file => [leadId, `${req.protocol}://${req.get('host')}/propertyimages/${file.filename}`,'images', user_id]);
+    const fileValues = filesArray.map(file => [leadId, `${req.protocol}://${req.get('host')}/propertyimages/${file.filename}`, 'images', user_id]);
     if (fileValues.length > 0) {
       await pool.query(`INSERT INTO ${TABLE.LEADS_IMAGES_TABLE} (lead_id, images_url,file_type, user_id) VALUES ?`, [fileValues]);
     }
 
     // handle documents of pdf 
-    const documentsArray = req.files['documents'] || []; 
-    const documentsValues = documentsArray.map(file => [leadId, `${req.protocol}://${req.get('host')}/propertydocuments/${file.filename}`,'document', user_id]);
+    const documentsArray = req.files['documents'] || [];
+    const documentsValues = documentsArray.map(file => [leadId, `${req.protocol}://${req.get('host')}/propertydocuments/${file.filename}`, 'document', user_id]);
     if (documentsValues.length > 0) {
       await pool.query(`INSERT INTO ${TABLE.LEADS_IMAGES_TABLE} (lead_id, images_url,file_type, user_id) VALUES ?`, [documentsValues]);
     }
 
-    res.status(201).json({ message: commonTitle+' created successfully', status: true, leadId });
+    res.status(201).json({ message: commonTitle + ' created successfully', status: true, leadId });
   } catch (error) {
-    console.error('Error creating :'+commonTitle, error);
+    console.error('Error creating :' + commonTitle, error);
     res.status(500).json({ message: 'Server error', status: 'error' });
   }
 });
@@ -161,14 +161,14 @@ router.post('/',authenticateToken, upload.fields([
 router.get('/finance/', async (req, res) => {
   const id = req.params.id;
   try {
-    const mainData  = [{1:'Cash', 2:"Mortgage"}];
+    const mainData = [{ 1: 'Cash', 2: "Mortgage" }];
     res.status(200).json({
-      data:mainData,
+      data: mainData,
       message: "",
       status: true
     });
   } catch (error) {
-    console.error('Error retrieving :'+commonTitle, error);
+    console.error('Error retrieving :' + commonTitle, error);
     res.status(500).json({ message: 'Server error', status: 'error' });
   }
 });
@@ -186,16 +186,17 @@ router.get('/:id?', async (req, res) => {
     const [propertyResult] = id ? await pool.query(propertyQuery, [id]) : await pool.query(propertyQuery);
 
     if (!propertyResult.length) {
-      return res.status(404).json({ message: commonTitle+' not found', status: 'error' });
+      return res.status(404).json({ message: commonTitle + ' not found', status: 'error' });
     }
 
-    // Retrieve images and amenities for each property
+    // Retrieve images, amenities, and match_property for each property
     const propertiesWithExtras = await Promise.all(propertyResult.map(async property => {
       const [images] = await pool.query(`SELECT images_url FROM ${TABLE.LEADS_IMAGES_TABLE} WHERE lead_id = ?`, [property.id]);
       const [amenities] = await pool.query(`SELECT amenities_id FROM ${TABLE.LEADS_AMENITIES_TABLE} WHERE lead_id = ?`, [property.id]);
       const [property_type] = await pool.query(`SELECT property_type_id FROM ${TABLE.LEADS_PROPERTY_TYPES_TABLE} WHERE lead_id = ?`, [property.id]);
       const [no_of_bathrooms] = await pool.query(`SELECT no_of_bathrooms FROM ${TABLE.LEADS_NOOFBATHROOM_TABLE} WHERE lead_id = ?`, [property.id]);
       const [parking_option] = await pool.query(`SELECT parking_option_id FROM ${TABLE.LEADS_PARKING_OPTIONS_TABLE} WHERE lead_id = ?`, [property.id]);
+      const [matchProperties] = await pool.query(`SELECT * FROM ${TABLE.MATCH_PROPERTY_TABLE} WHERE lead_id = ?`, [property.id]);
 
       return {
         ...property,
@@ -203,26 +204,27 @@ router.get('/:id?', async (req, res) => {
         amenities: amenities.map(amenity => amenity.amenities_id),
         property_type: property_type.map(property_type => property_type.property_type_id),
         no_of_bathrooms: no_of_bathrooms.map(no_of_bathrooms => no_of_bathrooms.no_of_bathrooms),
-        parking_option: parking_option.map(parking_option => parking_option.parking_option_id)
+        parking_option: parking_option.map(parking_option => parking_option.parking_option_id),
+        match_property: matchProperties
       };
     }));
 
     // Return the response based on whether a single property or multiple properties were requested
     res.status(200).json({
       data: id ? propertiesWithExtras[0] : propertiesWithExtras,
-      message: id ? commonTitle+' retrieved successfully' : commonTitle+' retrieved successfully',
+      message: id ? commonTitle + ' retrieved successfully' : commonTitle + ' retrieved successfully',
       status: true
     });
   } catch (error) {
-    console.error('Error retrieving :'+commonTitle, error);
+    console.error('Error retrieving :' + commonTitle, error);
     res.status(500).json({ message: 'Server error', status: 'error' });
   }
 });
 
 
-router.put('/:id', authenticateToken,upload.fields([
-  { name: 'files', maxCount: 10 }, 
-  { name: 'documents', maxCount: 10 } 
+router.put('/:id', authenticateToken, upload.fields([
+  { name: 'files', maxCount: 10 },
+  { name: 'documents', maxCount: 10 }
 ]), async (req, res) => {
   const { id } = req.params;
   const {
@@ -259,29 +261,29 @@ router.put('/:id', authenticateToken,upload.fields([
   let parking_options = parking_option;
 
   let formattedHandoverDate;
-  
+
   const user_id = req.user.id;
-  if(handover_date) {
+  if (handover_date) {
     const [day, month, year] = handover_date.split('-');
     formattedHandoverDate = `${year}-${month}-${day}`;
   }
 
-  if(!email) {
+  if (!email) {
     return res.status(400).json({ message: 'Please provide email', status: 'error' });
   }
-  if(email) {
+  if (email) {
     const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    if(!emailRegexp.test(email)) {
+    if (!emailRegexp.test(email)) {
       return res.status(400).json({ message: 'Please provide valid email', status: 'error' });
     }
   }
 
-  if(!phone_number) {
+  if (!phone_number) {
     return res.status(400).json({ message: 'Please provide phone', status: 'error' });
   }
-  if(phone_number) {
+  if (phone_number) {
     let isnum = /^\d+$/.test(phone_number);
-    if(!isnum) {
+    if (!isnum) {
       return res.status(400).json({ message: 'Please provide valid phone', status: 'error' });
     }
   }
@@ -289,7 +291,7 @@ router.put('/:id', authenticateToken,upload.fields([
   const numberOfBathroomsArray = Array.isArray(number_of_bathrooms) ? number_of_bathrooms : JSON.parse(number_of_bathrooms || '[]');
   const property_type_id_array = Array.isArray(property_type_ids) ? property_type_ids : JSON.parse(property_type_ids || '[]');
   const parking_options_array = Array.isArray(parking_options) ? parking_options : JSON.parse(parking_options || '[]');
-  
+
 
   try {
     // Check if the property exists
@@ -297,9 +299,9 @@ router.put('/:id', authenticateToken,upload.fields([
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    let updates = { lead_type, developer_name,  starting_price, location,  sqft_starting_size, finance, parking, furnished,  account_type, leasehold_length, handover_date:formattedHandoverDate, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id };
-    
-    
+    let updates = { lead_type, developer_name, starting_price, location, sqft_starting_size, finance, parking, furnished, account_type, leasehold_length, handover_date: formattedHandoverDate, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, note, range_min, range_max, property_status, user_id };
+
+
     const updateQuery = Object.keys(updates).filter(key => updates[key]).map(key => `${key} = ?`).join(', ');
 
     if (updateQuery) {
@@ -346,15 +348,36 @@ router.put('/:id', authenticateToken,upload.fields([
     }
 
     const [updatedRecord] = await pool.query(`SELECT * FROM ${TABLE.LEADS_TABLE} WHERE id = ?`, [id]);
-    res.status(200).json({ data: updatedRecord, message: commonTitle+' updated successfully', status: true });
+    res.status(200).json({ data: updatedRecord, message: commonTitle + ' updated successfully', status: true });
   } catch (error) {
-    console.error('Error updating :'+commonTitle, error);
+    console.error('Error updating :' + commonTitle, error);
     res.status(500).json({ message: 'Server error', status: 'error' });
   }
 });
 
+// Delete a property (soft delete)
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
 
-router.get('/matchproperty/:id', async (req, res) => {
+  try {
+    const [result] = await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET status = 0 WHERE id = ?`, [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: commonTitle + ' not found', status: 'error' });
+    }
+
+    res.status(200).json({
+      message: commonTitle + ' deleted successfully',
+      status: true
+    });
+  } catch (error) {
+
+    res.status(500).json({ message: 'Server error', status: 'error' });
+  }
+});
+
+// Find: Match Property Data Based on Lead
+router.get('/findproperty/:id', async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -382,28 +405,53 @@ router.get('/matchproperty/:id', async (req, res) => {
   }
 });
 
-
-
-
-// Delete a property (soft delete)
-router.delete('/:id', async (req, res) => {
-  const { id } = req.params;
+// Store: Match Property Data Based on Lead
+router.post('/matchproperty/:id', async (req, res) => {
+  
+  const id = req.params.id;
+  const { developer_id } = req.body;
 
   try {
-    const [result] = await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET status = 0 WHERE id = ?`, [id]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: commonTitle+' not found', status: 'error' });
+    const [existingRecord] = await pool.query(`SELECT * FROM ${TABLE.LEADS_TABLE} WHERE id = ?`, [id]);
+    if (existingRecord.length === 0) {
+      return res.status(404).json({ message: 'Record not found', status: false });
     }
 
-    res.status(200).json({
-      message: commonTitle+' deleted successfully',
-      status: true
-    });
-  } catch (error) {
+    await pool.query(`DELETE FROM ${TABLE.MATCH_PROPERTY_TABLE} WHERE lead_id = ?`, [id]);
 
+    const recordsToInsert = developer_id.map(devId => [null, id, devId]);
+    await pool.query(`INSERT INTO ${TABLE.MATCH_PROPERTY_TABLE} (id, lead_id, developer_id) VALUES ?`, [recordsToInsert]);
+
+    res.status(200).json({ message: 'Records updated successfully', status: true });
+  } catch (error) {
+    console.error('Error updating match property:', error);
     res.status(500).json({ message: 'Server error', status: 'error' });
   }
 });
+
+// Fetch: Match Property Data Based on Lead
+router.get('/matchproperty/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const [existingRecord] = await pool.query(`SELECT * FROM ${TABLE.LEADS_TABLE} WHERE id = ?`, [id]);
+    if (existingRecord.length === 0) {
+      return res.status(404).json({ message: 'Record not found', status: false });
+    }
+
+
+    const [matchRecord] = await pool.query(`SELECT * FROM ${TABLE.MATCH_PROPERTY_TABLE} WHERE lead_id = ?`, [id]);
+
+    if (matchRecord.length === 0) {
+      return res.status(404).json({ message: 'No matching record found', status: false });
+    }
+
+    res.status(200).json({ data: matchRecord, message: 'Fetched successfully', status: true });
+  } catch (error) {
+    console.error('Error retrieving match:', error);
+    res.status(500).json({ message: 'Server error', status: 'error' });
+  }
+});
+
 
 module.exports = router;
