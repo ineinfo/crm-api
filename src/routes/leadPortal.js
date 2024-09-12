@@ -419,6 +419,10 @@ router.post('/matchproperty/:id', async (req, res) => {
 
     await pool.query(`DELETE FROM ${TABLE.MATCH_PROPERTY_TABLE} WHERE lead_id = ?`, [id]);
 
+    if (developer_id.length === 0) {
+      return res.status(200).json({ message: 'No developer IDs provided, Records deleted successfully', status: true });
+    }
+
     const recordsToInsert = developer_id.map(devId => [null, id, devId]);
     await pool.query(`INSERT INTO ${TABLE.MATCH_PROPERTY_TABLE} (id, lead_id, developer_id) VALUES ?`, [recordsToInsert]);
 

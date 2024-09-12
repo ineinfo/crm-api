@@ -8,6 +8,8 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const authenticateToken = require('../utils/middleware');
+const { checkEmailExistOrNot, checkPhoneExistOrNot } = require('../utils/commonFunction')
+
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -28,6 +30,22 @@ router.post('/', upload.fields([{ name: 'avatarurl' }]), async (req, res) => {
   // Check if required fields are provided
   if (!email || !mobile_number || !role_id) {
     return res.status(400).json({ message: 'Email, mobile number, or role cannot be empty', status: 'error' });
+  }
+
+  // Email Validation
+  if (email) {
+    const emailExists = await checkEmailExistOrNot(TABLE.USERS_TABLE, email);
+    if (emailExists) {
+      return res.status(409).json({ message: 'Email already exists', status: 'error' });
+    }
+  }
+
+  // Mobile Validation
+  if (mobile_number) {
+    const phoneExists = await checkPhoneExistOrNot(TABLE.USERS_TABLE, mobile_number);
+    if (phoneExists) {
+      return res.status(409).json({ message: 'Mobile Number already exists', status: 'error' });
+    }
   }
 
   // Construct the avatar URL if the file is uploaded
@@ -151,6 +169,22 @@ router.put('/:id', upload.fields([{ name: 'avatarurl' }]), async (req, res) => {
     if (newAvatarUrl) {
       setClause.push('avatarurl = ?');
       fields.push(newAvatarUrl);
+    }
+
+    // Email Validation
+    if (email) {
+      const emailExists = await checkEmailExistOrNot(TABLE.USERS_TABLE, email, id);
+      if (emailExists) {
+        return res.status(409).json({ message: 'Email already exists', status: 'error' });
+      }
+    }
+
+    // Mobile Validation
+    if (mobile_number) {
+      const phoneExists = await checkPhoneExistOrNot(TABLE.USERS_TABLE, mobile_number, id);
+      if (phoneExists) {
+        return res.status(409).json({ message: 'Mobile Number already exists', status: 'error' });
+      }
     }
 
     if (setClause.length === 0) {
