@@ -239,7 +239,7 @@ router.put('/:id', authenticateToken,upload.fields([
   let property_type_ids = property_type;
   let parking_options = parking_option;
 
-  let formattedHandoverDate;
+  let formattedHandoverDate = null
   
   const user_id = req.user.id;
   if(handover_date) {
@@ -280,11 +280,13 @@ router.put('/:id', authenticateToken,upload.fields([
     // Update property details
     let updates = { developer_name,  starting_price, location,  sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, handover_date:formattedHandoverDate, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id };
     
-    
-    const updateQuery = Object.keys(updates).filter(key => updates[key]).map(key => `${key} = ?`).join(', ');
+    // Build update query
+    const updateEntries = Object.entries(updates).filter(([key, value]) => value !== undefined);
+    const updateQuery = updateEntries.map(([key]) => `${key} = ?`).join(', ');
+    const updateValues = updateEntries.map(([_, value]) => value);
 
     if (updateQuery) {
-      await pool.query(`UPDATE ${TABLE.DEVELOPERS_TABLE} SET ${updateQuery} WHERE id = ?`, [...Object.values(updates).filter(v => v), id]);
+      await pool.query(`UPDATE ${TABLE.DEVELOPERS_TABLE} SET ${updateQuery} WHERE id = ?`, [...updateValues, id]);
     }
 
     // Update images
