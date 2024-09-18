@@ -10,12 +10,14 @@ const TABLES = {
     DEVELOPERS_TABLE: 'developers',
     DEVELOPERS_AMENITIES_TABLE:'developers_amenities',
     DEVELOPERS_NOOFBATHROOM_TABLE:'developers_number_of_bathrooms',
+    DEVELOPERS_NOOFBEDROOM_TABLE:'developers_number_of_bedrooms',
     DEVELOPERS_PROPERTY_TYPES_TABLE:'developers_property_types',
     DEVELOPERS_PARKING_OPTIONS_TABLE:'developers_parking_options',
     DEVELOPERS_IMAGES_TABLE:'developers_media',
 
 
     LEADS_TABLE: 'leads',
+    LEADS_FOLLOWUP_TABLE: 'leads_followup',
     LEADS_AMENITIES_TABLE: 'leads_amenities',
     LEADS_NOOFBATHROOM_TABLE:'leads_number_of_bathrooms',
     LEADS_PROPERTY_TYPES_TABLE:'leads_property_types',

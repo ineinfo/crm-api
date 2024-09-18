@@ -1,5 +1,7 @@
 const pool = require('../utils/db');
 
+const getQueryParamId = (url) => new URL(url).searchParams.get('id');
+
 // Check email exists or not
 const checkEmailExistOrNot = async (tableName, email, ID = null) => {
     try {
@@ -40,6 +42,7 @@ const checkPhoneExistOrNot = async (tableName, phone, ID = null) => {
 }
 
 module.exports = {    
+    getQueryParamId,
     checkEmailExistOrNot,
     checkPhoneExistOrNot
 }
