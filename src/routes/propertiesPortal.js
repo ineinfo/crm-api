@@ -51,6 +51,7 @@ router.post('/',authenticateToken, upload.fields([
     property_status,
     property_type = [],
     number_of_bathrooms = [],
+    number_of_bedrooms = [],
     amenities = [],
     parking_option = []
   } = req.body;
@@ -62,6 +63,7 @@ router.post('/',authenticateToken, upload.fields([
   // Convert amenities to an array if it's a string
   const amenitiesArray = Array.isArray(amenities) ? amenities : JSON.parse(amenities || '[]');
   const numberOfBathroomsArray = Array.isArray(number_of_bathrooms) ? number_of_bathrooms : JSON.parse(number_of_bathrooms || '[]');
+  const numberOfBedroomsArray = Array.isArray(number_of_bedrooms) ? number_of_bedrooms : JSON.parse(number_of_bedrooms || '[]');
   const property_type_id_array = Array.isArray(property_type_ids) ? property_type_ids : JSON.parse(property_type_ids || '[]');
   const parking_options_array = Array.isArray(parking_options) ? parking_options : JSON.parse(parking_options || '[]');
   
@@ -120,6 +122,12 @@ router.post('/',authenticateToken, upload.fields([
       await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_NOOFBATHROOM_TABLE} (developer_id, no_of_bathrooms, user_id) VALUES ?`, [amenityValues]);
     }
 
+    // Handle Number of Bedrooms
+    if (numberOfBedroomsArray.length > 0) {
+      const amenityValues = numberOfBedroomsArray.map(no_of_bedrooms => [propertyId, no_of_bedrooms, user_id]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_NOOFBEDROOM_TABLE} (developer_id, no_of_bedrooms, user_id) VALUES ?`, [amenityValues]);
+    }
+
     // Handle property type 
     if (property_type_id_array.length > 0) {
       const amenityValues = property_type_id_array.map(property_type_id => [propertyId, property_type_id, user_id]);
@@ -163,7 +171,7 @@ router.get('/:id?', async (req, res) => {
     const baseQuery = `SELECT * FROM ${TABLE.DEVELOPERS_TABLE} WHERE status != 0`;
     const condition = id ? ` AND id = ?` : '';
     const propertyQuery = baseQuery + condition;
-    console.log('propertyQuerypropertyQuery',propertyQuery);
+    // console.log('propertyQuerypropertyQuery',propertyQuery);
     // Fetch properties based on whether an ID is provided
     const [propertyResult] = id ? await pool.query(propertyQuery, [id]) : await pool.query(propertyQuery);
 
@@ -177,6 +185,7 @@ router.get('/:id?', async (req, res) => {
       const [amenities] = await pool.query(`SELECT amenities_id FROM ${TABLE.DEVELOPERS_AMENITIES_TABLE} WHERE developer_id = ?`, [property.id]);
       const [property_type] = await pool.query(`SELECT property_type_id FROM ${TABLE.DEVELOPERS_PROPERTY_TYPES_TABLE} WHERE developer_id = ?`, [property.id]);
       const [no_of_bathrooms] = await pool.query(`SELECT no_of_bathrooms FROM ${TABLE.DEVELOPERS_NOOFBATHROOM_TABLE} WHERE developer_id = ?`, [property.id]);
+      const [no_of_bedrooms] = await pool.query(`SELECT no_of_bedrooms FROM ${TABLE.DEVELOPERS_NOOFBEDROOM_TABLE} WHERE developer_id = ?`, [property.id]);
       const [parking_option] = await pool.query(`SELECT parking_option_id FROM ${TABLE.DEVELOPERS_PARKING_OPTIONS_TABLE} WHERE developer_id = ?`, [property.id]);
 
       return {
@@ -185,6 +194,7 @@ router.get('/:id?', async (req, res) => {
         amenities: amenities.map(amenity => amenity.amenities_id),
         property_type: property_type.map(property_type => property_type.property_type_id),
         no_of_bathrooms: no_of_bathrooms.map(no_of_bathrooms => no_of_bathrooms.no_of_bathrooms),
+        no_of_bedrooms: no_of_bedrooms.map(no_of_bedrooms => no_of_bedrooms.no_of_bedrooms),
         parking_option: parking_option.map(parking_option => parking_option.parking_option_id)
       };
     }));
@@ -233,6 +243,7 @@ router.put('/:id', authenticateToken,upload.fields([
     property_status,
     property_type = [],
     number_of_bathrooms = [],
+    number_of_bedrooms = [],
     amenities = [],
     parking_option = []
   } = req.body;
@@ -268,6 +279,7 @@ router.put('/:id', authenticateToken,upload.fields([
   }
 
   const numberOfBathroomsArray = Array.isArray(number_of_bathrooms) ? number_of_bathrooms : JSON.parse(number_of_bathrooms || '[]');
+  const numberOfBedroomsArray = Array.isArray(number_of_bedrooms) ? number_of_bedrooms : JSON.parse(number_of_bedrooms || '[]');
   const property_type_id_array = Array.isArray(property_type_ids) ? property_type_ids : JSON.parse(property_type_ids || '[]');
   const parking_options_array = Array.isArray(parking_options) ? parking_options : JSON.parse(parking_options || '[]');
   
@@ -312,6 +324,13 @@ router.put('/:id', authenticateToken,upload.fields([
       await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_NOOFBATHROOM_TABLE} WHERE developer_id = ?`, [id]);
       const amenityValues = numberOfBathroomsArray.map(no_of_bathrooms => [id, no_of_bathrooms, user_id]);
       await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_NOOFBATHROOM_TABLE} (developer_id, no_of_bathrooms, user_id) VALUES ?`, [amenityValues]);
+    }
+
+    // Handle Number of Bedrooms
+    if (numberOfBedroomsArray.length > 0) {
+      await pool.query(`DELETE FROM ${TABLE.DEVELOPERS_NOOFBEDROOM_TABLE} WHERE developer_id = ?`, [id]);
+      const amenityValues = numberOfBedroomsArray.map(no_of_bedrooms => [id, no_of_bedrooms, user_id]);
+      await pool.query(`INSERT INTO ${TABLE.DEVELOPERS_NOOFBEDROOM_TABLE} (developer_id, no_of_bedrooms, user_id) VALUES ?`, [amenityValues]);
     }
 
     // Handle property type 

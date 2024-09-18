@@ -30,7 +30,8 @@ router.post('/', authenticateToken, upload.fields([
 
   const {
     lead_type,
-    developer_name,
+    first_name,
+    last_name,
     location,
     starting_price,
     handover_date,
@@ -68,8 +69,8 @@ router.post('/', authenticateToken, upload.fields([
   const parking_options_array = Array.isArray(parking_options) ? parking_options : JSON.parse(parking_options || '[]');
 
 
-  if (!developer_name || !lead_type) {
-    return res.status(400).json({ message: 'Name and Type fields are missing', status: 'error' });
+  if (!first_name || !last_name || !lead_type) {
+    return res.status(400).json({ message: 'First Name, Last Name and Type fields are missing', status: 'error' });
   }
 
   if (!email) {
@@ -103,9 +104,9 @@ router.post('/', authenticateToken, upload.fields([
     // Insert property
     const [result] = await pool.query(
       `INSERT INTO ${TABLE.LEADS_TABLE} 
-       (lead_type, developer_name, location, starting_price, finance, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?, ?)`,
-      [lead_type, developer_name, location, starting_price, finance, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, note, range_min, range_max, property_status, user_id]
+       (lead_type, first_name, last_name, location, starting_price, finance, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?, ?)`,
+      [lead_type, first_name, last_name, location, starting_price, finance, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, note, range_min, range_max, property_status, user_id]
     );
 
     const leadId = result.insertId;
@@ -229,7 +230,8 @@ router.put('/:id', authenticateToken, upload.fields([
   const { id } = req.params;
   const {
     lead_type,
-    developer_name,
+    first_name,
+    last_name,
     property_type_id,
     starting_price,
     location,
@@ -268,6 +270,10 @@ router.put('/:id', authenticateToken, upload.fields([
     formattedHandoverDate = `${year}-${month}-${day}`;
   }
 
+  if (!first_name || !last_name || !lead_type) {
+    return res.status(400).json({ message: 'First Name, Last Name and Type fields are missing', status: 'error' });
+  }
+
   if (!email) {
     return res.status(400).json({ message: 'Please provide email', status: 'error' });
   }
@@ -299,7 +305,7 @@ router.put('/:id', authenticateToken, upload.fields([
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    let updates = { lead_type, developer_name, starting_price, location, sqft_starting_size, finance, parking, furnished, account_type, leasehold_length, handover_date: formattedHandoverDate, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, note, range_min, range_max, property_status, user_id };
+    let updates = { lead_type, first_name, last_name, starting_price, location, sqft_starting_size, finance, parking, furnished, account_type, leasehold_length, handover_date: formattedHandoverDate, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, note, range_min, range_max, property_status, user_id };
 
     // Build update query
     const updateEntries = Object.entries(updates).filter(([key, value]) => value !== undefined);
