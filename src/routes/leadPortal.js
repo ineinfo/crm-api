@@ -49,6 +49,7 @@ router.post('/', authenticateToken, upload.fields([
     service_charges,
     council_tax_band,
     note,
+    followup_date,
     range_min,
     range_max,
     property_status,
@@ -104,12 +105,28 @@ router.post('/', authenticateToken, upload.fields([
     // Insert property
     const [result] = await pool.query(
       `INSERT INTO ${TABLE.LEADS_TABLE} 
-       (lead_type, first_name, last_name, location, starting_price, finance, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?, ?)`,
-      [lead_type, first_name, last_name, location, starting_price, finance, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, note, range_min, range_max, property_status, user_id]
+       (lead_type, first_name, last_name, location, starting_price, finance, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode,council_tax_band,range_min,range_max,property_status, user_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?, ?)`,
+      [lead_type, first_name, last_name, location, starting_price, finance, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, range_min, range_max, property_status, user_id]
     );
 
     const leadId = result.insertId;
+
+    // Follow UP Flow Start
+    let formattedFollowupDate = null;
+    if (followup_date) {
+      const [day, month, year] = followup_date.split('-');
+      formattedFollowupDate = `${year}-${month}-${day}`;
+    } else {
+      const currentDate = new Date();
+      currentDate.setDate(currentDate.getDate() + 7);
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // 0-indexed month
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      formattedFollowupDate = `${year}-${month}-${day}`;
+    }
+    await pool.query(`INSERT INTO ${TABLE.LEADS_FOLLOWUP_TABLE} (lead_id, followup_date, summary) VALUES (?, ?, ?)`, [leadId, formattedFollowupDate, note]);
+    // Follow UP Flow End
 
     // Handle amenities
     if (amenitiesArray.length > 0) {
@@ -250,7 +267,6 @@ router.put('/:id', authenticateToken, upload.fields([
     pincode,
     service_charges,
     council_tax_band,
-    note,
     range_min,
     range_max,
     property_status,
@@ -305,7 +321,7 @@ router.put('/:id', authenticateToken, upload.fields([
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    let updates = { lead_type, first_name, last_name, starting_price, location, sqft_starting_size, finance, parking, furnished, account_type, leasehold_length, handover_date: formattedHandoverDate, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, note, range_min, range_max, property_status, user_id };
+    let updates = { lead_type, first_name, last_name, starting_price, location, sqft_starting_size, finance, parking, furnished, account_type, leasehold_length, handover_date: formattedHandoverDate, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, range_min, range_max, property_status, user_id };
 
     // Build update query
     const updateEntries = Object.entries(updates).filter(([key, value]) => value !== undefined);

@@ -41,8 +41,21 @@ const checkPhoneExistOrNot = async (tableName, phone, ID = null) => {
     }
 }
 
-module.exports = {    
+function formatUTCToLocalDate(utcDate) {
+    const date = new Date(utcDate);
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000); // Convert the date to local timezone
+
+    // Format the local date to YYYY-MM-DD
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const day = String(localDate.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
+module.exports = {
     getQueryParamId,
     checkEmailExistOrNot,
-    checkPhoneExistOrNot
+    checkPhoneExistOrNot,
+    formatUTCToLocalDate
 }
