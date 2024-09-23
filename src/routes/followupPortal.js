@@ -13,7 +13,7 @@ router.post('/', async (req, res) => {
     }
     try {
 
-        const [leadCheck] = await pool.query(`SELECT id FROM ${TABLE.LEADS_TABLE} WHERE id = ?`, [lead_id]);
+        const [leadCheck] = await pool.query(`SELECT id FROM ${TABLE.LEADS_TABLE} WHERE id = ? and status = 2`, [lead_id]);
         if (leadCheck.length === 0) {
             return res.status(404).json({ message: 'Lead not found', status: 'error' });
         }
@@ -133,7 +133,7 @@ router.post('/createallow', async (req, res) => {
     try {
         const { lead_id } = req.body;
 
-        const [leadResults] = await pool.query(`SELECT COUNT(*) as count FROM ${TABLE.LEADS_TABLE} WHERE id = ?`, [lead_id]);
+        const [leadResults] = await pool.query(`SELECT COUNT(*) as count FROM ${TABLE.LEADS_TABLE} WHERE id = ? and status = 2`, [lead_id]);
         const { count } = leadResults[0];
         if (count === 0) {
             return res.status(404).json({ message: 'Lead ID not found', status: false });
