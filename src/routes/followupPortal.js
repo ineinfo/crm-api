@@ -11,6 +11,10 @@ router.post('/', async (req, res) => {
     if (!lead_id || !followup_date || !summary) {
         return res.status(400).json({ message: 'Lead ID, Follow Up Date and Description must be required', status: 'error' });
     }
+
+    const parts = followup_date.split('-'); // Assuming format is dd-mm-yyyy
+    const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`; // yyyy-mm-dd format
+
     try {
 
         const [leadCheck] = await pool.query(`SELECT id FROM ${TABLE.LEADS_TABLE} WHERE id = ? and status = 2`, [lead_id]);
@@ -18,7 +22,7 @@ router.post('/', async (req, res) => {
             return res.status(404).json({ message: 'Lead not found', status: 'error' });
         }
 
-        await pool.query(`INSERT INTO ${TABLE.LEADS_FOLLOWUP_TABLE} (lead_id, followup_date, summary) VALUES (?, ?,?)`, [lead_id, followup_date, summary]);
+        await pool.query(`INSERT INTO ${TABLE.LEADS_FOLLOWUP_TABLE} (lead_id, followup_date, summary) VALUES (?, ?,?)`, [lead_id, formattedDate, summary]);
 
         res.status(201).json({ message: 'Follow up created successfully', status: true });
     } catch (error) {
@@ -67,8 +71,12 @@ router.get('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { followup_date, summary, followup_status } = req.body;
+
+    const parts = followup_date.split('-'); // Assuming format is dd-mm-yyyy
+    const formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`; // yyyy-mm-dd format
+
     try {
-        const [result] = await pool.query(`UPDATE ${TABLE.LEADS_FOLLOWUP_TABLE} SET followup_date = ?, summary = ?, followup_status = ? WHERE id = ?`, [followup_date, summary, followup_status, id]);
+        const [result] = await pool.query(`UPDATE ${TABLE.LEADS_FOLLOWUP_TABLE} SET followup_date = ?, summary = ?, followup_status = ? WHERE id = ?`, [formattedDate, summary, followup_status, id]);
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Follow Up not found', status: 'error' });
         }
