@@ -159,7 +159,7 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
                 return res.status(400).json({ message: 'Please provide all information', status: 'error' });
             }
             
-            [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, servey_search) VALUES (?, ?, ?, ?)`, [lead_id, user_id, lead_status, servey_search]);
+            [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, survey_search) VALUES (?, ?, ?, ?)`, [lead_id, user_id, lead_status, servey_search]);
         }
 
         await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET lead_status = ?, lead_sales_status_list_id = ? WHERE id = ?`, [lead_status, result.insertId, lead_id]);
