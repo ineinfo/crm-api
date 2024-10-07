@@ -66,24 +66,29 @@ router.get('/:lead_id?',authenticateToken, async (req, res) => {
 
 router.post('/addstatus',authenticateToken, async (req, res) => {
     const user_id = req.user.id
-    const { lead_id, amount, status } = req.body;
-    if (!lead_id || !amount || !status) {
+    const { lead_id, amount, lead_status } = req.body;
+    if (!lead_id || !lead_status) {
         return res.status(400).json({ message: 'Please provide all fields', status: 'error' });
     }
     try {
-        const [result] = await pool.query(`INSERT INTO ${TABLE.SALES_OFFERS_TABLE} (lead_id, user_id, amount, status) VALUES (?, ?, ?, ?)`, [lead_id, user_id, amount, status]);
-        let message = ''
-        if(status==1) {
-            message = 'Offer accepted successfully';
+
+        const query = `SELECT * FROM ${TABLE.LEADS_TABLE} WHERE status != 0 AND id = ?`;
+        const [lead_check] = await pool.query(query)
+        if (!lead_check) {
+            res.status(401).json({
+                message:'Lead not found',
+                status: false,
+            });    
         }
-        if(status == 2) {
-            message = 'Offer rejected';
+
+        if(lead_status == 1) {
+            const [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, amount, lead_status) VALUES (?, ?, ?, ?)`, [lead_id, user_id, amount, lead_status]);
         }
-        if(status == 3) {
-            message = 'Withdrawn successfully'
-        }
+
+        await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET lead_status = ?, lead_sales_status_list_id = ? WHERE id = ?`, [lead_status, result.insertId, lead_id]);
+        
         res.status(201).json({
-            message,
+            message: "Lead Status Updated successfully",
             status: true,
         });
     } catch (error) {
