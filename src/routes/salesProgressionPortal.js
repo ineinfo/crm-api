@@ -21,7 +21,7 @@ router.get('/:lead_id?',authenticateToken, async (req, res) => {
             ? await pool.query(query, [lead_id])
             : await pool.query(query);
 
-        if (id) {
+        if (lead_id) {
             if (result.length === 0) {
                 return res.status(404).json({ message: 'Offers not found', status: 'error' });
             }
