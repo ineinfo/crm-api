@@ -44,6 +44,35 @@ router.get('/status',authenticateToken, async (req, res) => {
     }
 });
 
+
+router.get('/status_ledger/:lead_id',authenticateToken, async (req, res) => {
+    try {
+        const query = `SELECT * FROM ${TABLE.LEADS_TABLE} WHERE status != 0 and id = ?`;
+        const [result] = await pool.query(query, [lead_id]);
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Lead not found', status: 'error' });
+        }
+
+        const lead_query = `SELECT lead.*,msp.sales_status FROM 
+                    ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} lead
+                    LEFT JOIN ${TABLE.MASTER_SALES_PROGRESSION_TABLE} msp
+                    ON msp.id = lead.lead_status
+                    WHERE lead.lead_id = ?`;
+        const [lead_result] = await pool.query(lead_query, [lead_id]);
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Lead status  not found', status: 'error' });
+        }
+        res.status(200).json({
+            data: lead_result,
+            message: 'Lead status retrieved successfully',
+            status: true
+        });
+    } catch (error) {
+        console.error('Error retrieving Lead status:', error);
+        res.status(500).json({ message: 'Server error', status: 'error' });
+    }
+});
+
 router.get('/:lead_id?',authenticateToken, async (req, res) => {
     const lead_id = req.params.lead_id; 
     try {
