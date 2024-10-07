@@ -108,7 +108,7 @@ router.get('/:lead_id?',authenticateToken, async (req, res) => {
 
 router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateToken, async (req, res) => {
     const user_id = req.user.id
-    const { lead_id, amount, lead_status, company_name, address, solicitor_name, number, email, mortgage_status, mortgage_amount, servey_search, conveyancing } = req.body;
+    const { lead_id, amount, lead_status, company_name, address, solicitor_name, number, email, mortgage_status, mortgage_amount, servey_search, conveyancing, sales_invoice_credited } = req.body;
     if (!lead_id || !lead_status) {
         return res.status(400).json({ message: 'Please provide all fields', status: 'error' });
     }
@@ -168,6 +168,14 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
             }
             
             [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, conveyancing) VALUES (?, ?, ?, ?)`, [lead_id, user_id, lead_status, conveyancing]);
+        }
+
+        if(lead_status == 8) {
+            if(!sales_invoice_credited) {
+                return res.status(400).json({ message: 'Please provide all information', status: 'error' });
+            }
+            
+            [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, sales_invoice_credited) VALUES (?, ?, ?, ?)`, [lead_id, user_id, lead_status, sales_invoice_credited]);
         }
 
         await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET lead_status = ?, lead_sales_status_list_id = ? WHERE id = ?`, [lead_status, result.insertId, lead_id]);
