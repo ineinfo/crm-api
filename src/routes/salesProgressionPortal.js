@@ -73,16 +73,17 @@ router.put('/updatestatus',authenticateToken, async (req, res) => {
     try {
 
         const query = `SELECT * FROM ${TABLE.LEADS_TABLE} WHERE status!=0 AND id=?`;
-        const [lead_check] = await pool.query(query)
-        if (!lead_check) {
+        const [lead_check] = await pool.query(query, [lead_id])
+        if (!lead_check || lead_check.length === 0) {
             res.status(401).json({
                 message:'Lead not found',
                 status: false,
             });    
         }
 
+        let result = null;
         if(lead_status == 1) {
-            const [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, amount, lead_status) VALUES (?, ?, ?, ?)`, [lead_id, user_id, amount, lead_status]);
+            [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, amount, lead_status) VALUES (?, ?, ?, ?)`, [lead_id, user_id, amount, lead_status]);
         }
 
         await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET lead_status = ?, lead_sales_status_list_id = ? WHERE id = ?`, [lead_status, result.insertId, lead_id]);
