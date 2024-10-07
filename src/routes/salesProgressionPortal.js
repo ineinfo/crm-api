@@ -55,7 +55,7 @@ router.get('/status_ledger/:lead_id',authenticateToken, async (req, res) => {
         }
 
         const lead_query = `SELECT ll.*,msp.sales_status FROM ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} ll  LEFT JOIN ${TABLE.MASTER_SALES_PROGRESSION_TABLE} msp
-                    ON msp.id = lead.lead_status
+                    ON msp.id = ll.lead_status
                     WHERE ll.lead_id = ?`;
         const [lead_result] = await pool.query(lead_query, [lead_id]);
         if (result.length === 0) {
