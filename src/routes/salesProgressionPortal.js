@@ -10,18 +10,18 @@ const authenticateToken = require('../utils/middleware');
 let moduleTitle = 'Sales Progression';
 
 // Get an offer list
-router.get('/:lead_id?',authenticateToken, async (req, res) => {
-    const lead_id = req.params.lead_id; 
+router.get('/:order_id?',authenticateToken, async (req, res) => {
+    const order_id = req.params.order_id; 
     try {
-        const query = lead_id
-            ? `SELECT * FROM ${TABLE.SALES_OFFERS_TABLE} WHERE lead_id = ? AND status != 0`
+        const query = order_id
+            ? `SELECT * FROM ${TABLE.SALES_OFFERS_TABLE} WHERE order_id = ? AND status != 0`
             : `SELECT * FROM ${TABLE.SALES_OFFERS_TABLE} WHERE status != 0`;
 
-        const [result] = lead_id
-            ? await pool.query(query, [lead_id])
+        const [result] = order_id
+            ? await pool.query(query, [order_id])
             : await pool.query(query);
 
-        if (lead_id) {
+        if (order_id) {
             if (result.length === 0) {
                 return res.status(404).json({ message: 'Offers not found', status: 'error' });
             }
