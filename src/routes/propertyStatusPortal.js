@@ -10,20 +10,17 @@ let moduleTitle = 'Property Status';
 
 // Get an Property Type or all Property Types
 router.get('/:id?', async (req, res) => {
-    const id = req.params.id; // Get the ID from path parameters
+    const id = req.params.id; 
     try {
-        // Construct the query
         const query = id
             ? `SELECT * FROM ${TABLE.PROPERTY_STATUS} WHERE id = ? AND status = 1 ORDER BY title ASC`
             : `SELECT * FROM ${TABLE.PROPERTY_STATUS} WHERE status = 1 ORDER BY title ASC`;
 
-        // Execute the query
         const [result] = id
             ? await pool.query(query, [id])
             : await pool.query(query);
 
         if (id) {
-            // Handle single Property Type response
             if (result.length === 0) {
                 return res.status(404).json({ message: moduleTitle+' not found', status: 'error' });
             }
@@ -33,7 +30,6 @@ router.get('/:id?', async (req, res) => {
                 status: true
             });
         } else {
-            // Handle all Property Type response
             res.status(200).json({
                 data: result,
                 message: moduleTitle+' retrieved successfully',
@@ -45,6 +41,4 @@ router.get('/:id?', async (req, res) => {
         res.status(500).json({ message: 'Server error', status: 'error' });
     }
 });
-
-
 module.exports = router;
