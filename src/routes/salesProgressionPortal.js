@@ -109,7 +109,7 @@ router.get('/:lead_id?',authenticateToken, async (req, res) => {
 
 router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateToken, async (req, res) => {
     const user_id = req.user.id
-    const { lead_id, amount, lead_status, company_name, address, solicitor_name, number, email, mortgage_status, mortgage_amount, servey_search, conveyancing, sales_invoice_credited, exchange_of_contract_amount, exchange_of_contract_date } = req.body;
+    const { lead_id, amount, lead_status, company_name, address, solicitor_name, number, email, mortgage_status, mortgage_amount, servey_search, conveyancing, sales_invoice_credited, exchange_of_contract_amount, exchange_of_contract_date, completion_date } = req.body;
     if (!lead_id || !lead_status) {
         return res.status(400).json({ message: 'Please provide all fields', status: 'error' });
     }
@@ -188,6 +188,18 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
             
             [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, exchange_of_contract_amount, exchange_of_contract_date) VALUES (?, ?, ?, ?, ?)`, [lead_id, user_id, lead_status, exchange_of_contract_amount, exchange_db_date]);
         }
+
+        if(lead_status == 10) {
+            if(!completion_date) {
+                return res.status(400).json({ message: 'Please provide completion date', status: 'error' });
+            }
+
+            const completion_date_db = formatDateForDB(completion_date);
+            
+            [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, completion_date) VALUES (?, ?, ?, ?)`, [lead_id, user_id, lead_status, completion_date_db]);
+        }
+
+        
 
         await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET lead_status = ?, lead_sales_status_list_id = ? WHERE id = ?`, [lead_status, result.insertId, lead_id]);
         
