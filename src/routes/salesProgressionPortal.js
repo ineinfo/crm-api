@@ -64,7 +64,7 @@ router.get('/:lead_id?',authenticateToken, async (req, res) => {
 });
 
 
-router.post('/addstatus',authenticateToken, async (req, res) => {
+router.put('/updatestatus',authenticateToken, async (req, res) => {
     const user_id = req.user.id
     const { lead_id, amount, lead_status } = req.body;
     if (!lead_id || !lead_status) {
