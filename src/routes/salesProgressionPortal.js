@@ -13,11 +13,11 @@ let moduleTitle = 'Sales Progression';
 router.get('/:lead_id?',authenticateToken, async (req, res) => {
     const lead_id = req.params.lead_id; 
     try {
-        const query = id
+        const query = lead_id
             ? `SELECT * FROM ${TABLE.SALES_OFFERS_TABLE} WHERE lead_id = ? AND status != 0`
             : `SELECT * FROM ${TABLE.SALES_OFFERS_TABLE} WHERE status != 0`;
 
-        const [result] = id
+        const [result] = lead_id
             ? await pool.query(query, [lead_id])
             : await pool.query(query);
 
