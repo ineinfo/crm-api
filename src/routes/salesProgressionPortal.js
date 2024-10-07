@@ -108,7 +108,7 @@ router.get('/:lead_id?',authenticateToken, async (req, res) => {
 
 router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateToken, async (req, res) => {
     const user_id = req.user.id
-    const { lead_id, amount, lead_status, document } = req.body;
+    const { lead_id, amount, lead_status, company_name, address, solicitor_name, number, email } = req.body;
     if (!lead_id || !lead_status) {
         return res.status(400).json({ message: 'Please provide all fields', status: 'error' });
     }
@@ -133,14 +133,17 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
         }
 
         if(lead_status == 3) {
-            let documentPath = null;
-
             const documentUrl = req.files['document'] 
             ? `${req.protocol}://${req.get('host')}/lead_documents/${req.files['document'][0].filename}` 
             : null;
-        
-
             [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, document_url) VALUES (?, ?, ?, ?)`, [lead_id, user_id, lead_status, documentUrl]);
+        }
+
+        if(lead_status == 4) {
+            if (!company_name || !address || !solicitor_name || !number  || !email) {
+                return res.status(400).json({ message: 'Please provide all information', status: 'error' });
+            }
+            [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, company_name, address, solicitor_name, number, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [lead_id, user_id, lead_status, company_name, address, solicitor_name, number, email]);
         }
 
         await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET lead_status = ?, lead_sales_status_list_id = ? WHERE id = ?`, [lead_status, result.insertId, lead_id]);
