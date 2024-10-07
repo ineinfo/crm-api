@@ -53,9 +53,17 @@ function formatUTCToLocalDate(utcDate) {
     return `${year}-${month}-${day}`;
 }
 
+function formatDateForDB(dateStr) {
+    const [day, month, year] = dateStr.split('-');
+    const fullYear = year.length === 2 ? `20${year}` : year;
+    return `${fullYear}-${month}-${day}`;
+
+}
+
 module.exports = {
     getQueryParamId,
     checkEmailExistOrNot,
     checkPhoneExistOrNot,
-    formatUTCToLocalDate
+    formatUTCToLocalDate,
+    formatDateForDB
 }
