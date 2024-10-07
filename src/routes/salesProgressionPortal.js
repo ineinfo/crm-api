@@ -66,6 +66,7 @@ router.post('/',authenticateToken, async (req, res) => {
             status: true,
         });
     } catch (error) {
+        console.log('error + ',error);
         res.status(500).json({ message: 'Server error', status: 'error' });
     }
 });
