@@ -8,6 +8,7 @@ const router = express.Router();
 const authenticateToken = require('../utils/middleware');
 const multer = require('multer');
 const path = require('path');
+const {formatUTCToLocalDate} = require('../utils/commonFunction')
 
 let moduleTitle = 'Sales Progression';
 
@@ -108,7 +109,7 @@ router.get('/:lead_id?',authenticateToken, async (req, res) => {
 
 router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateToken, async (req, res) => {
     const user_id = req.user.id
-    const { lead_id, amount, lead_status, company_name, address, solicitor_name, number, email, mortgage_status, mortgage_amount, servey_search, conveyancing, sales_invoice_credited } = req.body;
+    const { lead_id, amount, lead_status, company_name, address, solicitor_name, number, email, mortgage_status, mortgage_amount, servey_search, conveyancing, sales_invoice_credited, exchange_of_contract_amount, exchange_of_contract_date } = req.body;
     if (!lead_id || !lead_status) {
         return res.status(400).json({ message: 'Please provide all fields', status: 'error' });
     }
@@ -176,6 +177,16 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
             }
             
             [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, sales_invoice_credited) VALUES (?, ?, ?, ?)`, [lead_id, user_id, lead_status, sales_invoice_credited]);
+        }
+
+        if(lead_status == 9) {
+            if(!exchange_of_contract_amount || !exchange_of_contract_date) {
+                return res.status(400).json({ message: 'Please provide all information', status: 'error' });
+            }
+
+            const exchange_db_date = formatUTCToLocalDate(exchange_of_contract_date);
+            
+            [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, exchange_of_contract_amount, exchange_of_contract_date) VALUES (?, ?, ?, ?)`, [lead_id, user_id, lead_status, exchange_of_contract_amount, exchange_db_date]);
         }
 
         await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET lead_status = ?, lead_sales_status_list_id = ? WHERE id = ?`, [lead_status, result.insertId, lead_id]);
