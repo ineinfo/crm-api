@@ -72,7 +72,7 @@ router.put('/updatestatus',authenticateToken, async (req, res) => {
     }
     try {
 
-        const query = `SELECT * FROM ${TABLE.LEADS_TABLE} WHERE status != 0 AND id = ?`;
+        const query = `SELECT * FROM ${TABLE.LEADS_TABLE} WHERE status!=0 AND id=?`;
         const [lead_check] = await pool.query(query)
         if (!lead_check) {
             res.status(401).json({
