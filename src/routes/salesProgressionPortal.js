@@ -10,23 +10,23 @@ const authenticateToken = require('../utils/middleware');
 let moduleTitle = 'Sales Progression';
 
 // Get an offer list
-router.get('/:order_id?',authenticateToken, async (req, res) => {
-    const order_id = req.params.order_id; 
+router.get('/:lead_id?',authenticateToken, async (req, res) => {
+    const lead_id = req.params.lead_id; 
     try {
-        const query = order_id
-            ? `SELECT * FROM ${TABLE.SALES_OFFERS_TABLE} WHERE order_id = ? AND status != 0`
+        const query = lead_id
+            ? `SELECT * FROM ${TABLE.SALES_OFFERS_TABLE} WHERE lead_id = ? AND status != 0`
             : `SELECT * FROM ${TABLE.SALES_OFFERS_TABLE} WHERE status != 0`;
 
-        const [result] = order_id
-            ? await pool.query(query, [order_id])
+        const [result] = lead_id
+            ? await pool.query(query, [lead_id])
             : await pool.query(query);
 
-        if (order_id) {
+        if (!lead_id) {
             if (result.length === 0) {
                 return res.status(404).json({ message: 'Offers not found', status: 'error' });
             }
             res.status(200).json({
-                data: result[0],
+                data: result,
                 message: 'Offers retrieved successfully',
                 status: true
             });
@@ -45,12 +45,12 @@ router.get('/:order_id?',authenticateToken, async (req, res) => {
 
 router.post('/',authenticateToken, async (req, res) => {
     const user_id = req.user.id
-    const { order_id, amount, status } = req.body;
-    if (!order_id || !amount || !status) {
+    const { lead_id, amount, status } = req.body;
+    if (!lead_id || !amount || !status) {
         return res.status(400).json({ message: 'Please provide all fields', status: 'error' });
     }
     try {
-        const [result] = await pool.query(`INSERT INTO ${TABLE.SALES_OFFERS_TABLE} (order_id, user_id, amount, status) VALUES (?, ?, ?, ?)`, [order_id, user_id, amount, status]);
+        const [result] = await pool.query(`INSERT INTO ${TABLE.SALES_OFFERS_TABLE} (lead_id, user_id, amount, status) VALUES (?, ?, ?, ?)`, [lead_id, user_id, amount, status]);
         let message = ''
         if(status==1) {
             message = 'Offer accepted successfully';
