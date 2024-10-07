@@ -46,6 +46,7 @@ router.get('/status',authenticateToken, async (req, res) => {
 
 
 router.get('/status_ledger/:lead_id',authenticateToken, async (req, res) => {
+    const lead_id = req.params.lead_id; 
     try {
         const query = `SELECT * FROM ${TABLE.LEADS_TABLE} WHERE status != 0 and id = ?`;
         const [result] = await pool.query(query, [lead_id]);
