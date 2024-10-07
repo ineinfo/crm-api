@@ -26,7 +26,9 @@ const path = require('path');
 
 // Serve static files from the "public" directory
 app.use('/userimages', express.static(path.join(__dirname, '../public/userimages')));
-app.use('/propertyimages', express.static(path.join(__dirname, '../public/propertyimages'))); // Add this line
+app.use('/propertyimages', express.static(path.join(__dirname, '../public/propertyimages')));
+app.use('/lead_documents', express.static(path.join(__dirname, '../public/lead_documents')));
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
