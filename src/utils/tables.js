@@ -32,7 +32,7 @@ const TABLES = {
     COUNTRY_TABLE:'countries',
     STATES_TABLE:'states',
     CITIES_TABLE:'cities',
-
+    SALES_OFFERS_TABLE:'sales_offers'
     
 }
 module.exports = TABLES;
