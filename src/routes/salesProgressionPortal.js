@@ -108,7 +108,7 @@ router.get('/:lead_id?',authenticateToken, async (req, res) => {
 
 router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateToken, async (req, res) => {
     const user_id = req.user.id
-    const { lead_id, amount, lead_status, company_name, address, solicitor_name, number, email } = req.body;
+    const { lead_id, amount, lead_status, company_name, address, solicitor_name, number, email, mortgage_status, mortgage_amount } = req.body;
     if (!lead_id || !lead_status) {
         return res.status(400).json({ message: 'Please provide all fields', status: 'error' });
     }
@@ -144,6 +144,17 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
                 return res.status(400).json({ message: 'Please provide all information', status: 'error' });
             }
             [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, company_name, address, solicitor_name, number, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [lead_id, user_id, lead_status, company_name, address, solicitor_name, number, email]);
+        }
+
+        if(lead_status == 5) {
+            if(mortgage_status == 1 && !mortgage_amount) {
+                return res.status(400).json({ message: 'Please provide mortgage amount', status: 'error' });
+            }
+            if(mortgage_status == 2) {
+                mortgage_amount = 0;
+            }
+            
+            await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, mortgage_status, mortgage_amount) VALUES (?, ?, ?, ?, ?)`, [lead_id, user_id, lead_status, mortgage_status, mortgage_amount]);
         }
 
         await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET lead_status = ?, lead_sales_status_list_id = ? WHERE id = ?`, [lead_status, result.insertId, lead_id]);
