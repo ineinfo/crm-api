@@ -50,7 +50,7 @@ router.post('/',authenticateToken, async (req, res) => {
         return res.status(400).json({ message: 'Please provide all fields', status: 'error' });
     }
     try {
-        const [result] = await pool.query(`INSERT INTO ${TABLE.SALES_OFFERS_TABLE} (order_id, user_id, amount) VALUES (?, ?, ?)`, [order_id, user_id, amount, status]);
+        const [result] = await pool.query(`INSERT INTO ${TABLE.SALES_OFFERS_TABLE} (order_id, user_id, amount, status) VALUES (?, ?, ?)`, [order_id, user_id, amount, status]);
         let message = ''
         if(status==1) {
             message = 'Offer accepted successfully';
