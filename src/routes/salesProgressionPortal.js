@@ -8,7 +8,7 @@ const router = express.Router();
 const authenticateToken = require('../utils/middleware');
 const multer = require('multer');
 const path = require('path');
-const {formatUTCToLocalDate} = require('../utils/commonFunction')
+const {formatDateForDB} = require('../utils/commonFunction')
 
 let moduleTitle = 'Sales Progression';
 
@@ -184,7 +184,7 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
                 return res.status(400).json({ message: 'Please provide all information', status: 'error' });
             }
 
-            const exchange_db_date = formatUTCToLocalDate(exchange_of_contract_date);
+            const exchange_db_date = formatDateForDB(exchange_of_contract_date);
             
             [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, exchange_of_contract_amount, exchange_of_contract_date) VALUES (?, ?, ?, ?, ?)`, [lead_id, user_id, lead_status, exchange_of_contract_amount, exchange_db_date]);
         }
