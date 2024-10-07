@@ -10,7 +10,7 @@ const authenticateToken = require('../utils/middleware');
 let moduleTitle = 'Sales Progression';
 
 // Get an offer list
-router.get('/:lead_id',authenticateToken, async (req, res) => {
+router.get('/:lead_id?',authenticateToken, async (req, res) => {
     const lead_id = req.params.lead_id; 
     try {
         const query = id
