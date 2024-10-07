@@ -34,7 +34,8 @@ const TABLES = {
     COUNTRY_TABLE:'countries',
     STATES_TABLE:'states',
     CITIES_TABLE:'cities',
-    SALES_OFFERS_TABLE:'sales_offers'
+    SALES_OFFERS_TABLE:'sales_offers',
+    MASTER_SALES_PROGRESSION_TABLE: 'master_sales_progression'
     
 }
 module.exports = TABLES;

@@ -12,7 +12,7 @@ let moduleTitle = 'Sales Progression';
 // Get an offer list
 router.get('/status',authenticateToken, async (req, res) => {
     try {
-        const query = `SELECT * FROM ${TABLE.SALES_OFFERS_TABLE} WHERE status != 0`;
+        const query = `SELECT * FROM ${TABLE.MASTER_SALES_PROGRESSION_TABLE} WHERE status != 0`;
 
         const [result] = await pool.query(query);
 
