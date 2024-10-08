@@ -77,14 +77,25 @@ router.get('/invoice/:lead_id',authenticateToken, async (req, res) => {
     const lead_id = req.params.lead_id; 
     try {
         const query = `SELECT * FROM ${TABLE.LEADS_TABLE} WHERE id = ? AND status != 0`;            
-
         const [result] = await pool.query(query,[lead_id]);
-
         if (result.length === 0) {
             return res.status(404).json({ message: 'Lead not found', status: 'error' });
         }
+        let lead_sales_status_list_data = result[0].lead_sales_status_list_id;
+        let info = {
+            lead: result[0],
+            
+        }
+
+        const lead_query = `SELECT * FROM ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} WHERE id = ? AND status != 0`;            
+        const [result_lead] = await pool.query(lead_query,[lead_sales_status_list_data]);
+        if(result_lead.length > 0) {
+            info.sale_data = result_lead[0];
+        }
+        
+        
         res.status(200).json({
-            data: result[0],
+            data: info,
             message: 'Lead retrieved successfully',
             status: true
         });
