@@ -231,6 +231,9 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
             const completion_date_db = formatDateForDB(completion_date);
             
             [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, completion_date) VALUES (?, ?, ?, ?)`, [lead_id, user_id, lead_status, completion_date_db]);
+
+            await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET status=3  WHERE id = ?`, [lead_id]);
+
         }
 
         await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET lead_status = ?, lead_sales_status_list_id = ? WHERE id = ?`, [lead_status, result.insertId, lead_id]);
