@@ -113,22 +113,14 @@ router.get('/invoice/:lead_id',authenticateToken, async (req, res) => {
 
         const [result] = await pool.query(query,[lead_id]);
 
-        if (!lead_id) {
-            if (result.length === 0) {
-                return res.status(404).json({ message: 'Lead not found', status: 'error' });
-            }
-            res.status(200).json({
-                data: result[0],
-                message: 'Lead retrieved successfully',
-                status: true
-            });
-        } else {
-            res.status(200).json({
-                data: result,
-                message: 'Lead retrieved successfully',
-                status: true
-            });
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Lead not found', status: 'error' });
         }
+        res.status(200).json({
+            data: result[0],
+            message: 'Lead retrieved successfully',
+            status: true
+        });
     } catch (error) {
         console.error('Error retrieving Lead:', error);
         res.status(500).json({ message: 'Server error', status: 'error' });
