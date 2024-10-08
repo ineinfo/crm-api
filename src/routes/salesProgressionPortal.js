@@ -84,11 +84,11 @@ router.get('/invoice/:lead_id',authenticateToken, async (req, res) => {
         let lead_sales_status_list_data = result[0].lead_sales_status_list_id;
         let info = {
             lead: result[0],
-            
         }
 
         const lead_query = `SELECT * FROM ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} WHERE id = ? `;            
         const [result_lead] = await pool.query(lead_query,[lead_sales_status_list_data]);
+        info.sale_data = [];
         if(result_lead.length > 0) {
             info.sale_data = result_lead[0];
         }
