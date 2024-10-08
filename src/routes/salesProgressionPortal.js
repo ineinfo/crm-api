@@ -106,6 +106,35 @@ router.get('/:lead_id?',authenticateToken, async (req, res) => {
     }
 });
 
+router.get('/invoice/:lead_id',authenticateToken, async (req, res) => {
+    const lead_id = req.params.lead_id; 
+    try {
+        const query = `SELECT * FROM ${TABLE.LEADS_TABLE} WHERE id = ? AND status != 0`;            
+
+        const [result] = await pool.query(query,[lead_id]);
+
+        if (!lead_id) {
+            if (result.length === 0) {
+                return res.status(404).json({ message: 'Lead not found', status: 'error' });
+            }
+            res.status(200).json({
+                data: result[0],
+                message: 'Lead retrieved successfully',
+                status: true
+            });
+        } else {
+            res.status(200).json({
+                data: result,
+                message: 'Lead retrieved successfully',
+                status: true
+            });
+        }
+    } catch (error) {
+        console.error('Error retrieving Lead:', error);
+        res.status(500).json({ message: 'Server error', status: 'error' });
+    }
+});
+
 
 router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateToken, async (req, res) => {
     const user_id = req.user.id
@@ -199,8 +228,6 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
             [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, completion_date) VALUES (?, ?, ?, ?)`, [lead_id, user_id, lead_status, completion_date_db]);
         }
 
-        
-
         await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET lead_status = ?, lead_sales_status_list_id = ? WHERE id = ?`, [lead_status, result.insertId, lead_id]);
         
         res.status(201).json({
@@ -212,6 +239,7 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
         res.status(500).json({ message: 'Server error', status: 'error' });
     }
 });
+
 
 router.post('/',authenticateToken, async (req, res) => {
     const user_id = req.user.id
