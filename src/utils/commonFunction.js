@@ -60,12 +60,17 @@ function formatDateForDB(dateStr) {
 }
 
 function formatDateTimeForDB(dateTimeStr) {
+    const date = new Date(dateTimeStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); 
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
 
-    const [datePart, timePart] = dateTimeStr.split(' ');
-    const [day, month, year] = datePart.split('-');
-    const fullYear = year.length === 2 ? `20${year}` : year;
-    const time = timePart ? timePart : '00:00:00';
-    return `${fullYear}-${month}-${day} ${time}`;
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+    
 }
 
 module.exports = {
