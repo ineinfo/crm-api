@@ -199,7 +199,7 @@ router.get('/:id?', async (req, res) => {
     // Base query with condition to get only properties with status = 1
     const baseQuery = `SELECT ll.*, mst.sales_status FROM ${TABLE.LEADS_TABLE} ll LEFT JOIN ${TABLE.MASTER_SALES_PROGRESSION_TABLE} mst ON mst.id = ll.lead_status WHERE ll.status != 0`;
     const condition = id ? ` AND ll.id = ?` : '';
-    const orderquery = ` ORDER BY ll.lead_status ASC`;
+    const orderquery = ` ORDER BY ll.lead_status DESC`;
     const propertyQuery = baseQuery + condition + orderquery;
 
     // Fetch properties based on whether an ID is provided
