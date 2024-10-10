@@ -143,7 +143,7 @@ router.get('/:lead_id?',authenticateToken, async (req, res) => {
 
 router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateToken, async (req, res) => {
     const user_id = req.user.id
-    const { lead_id, amount, lead_status, company_name, address, solicitor_name, number, email, mortgage_status, mortgage_amount, servey_search, conveyancing, sales_invoice_credited, exchange_of_contract_amount, exchange_of_contract_date, completion_date, inv_sale_date, inv_seller_developer_name, inv_property_address, inv_apartment_type, inv_buyer_name, inv_selling_real_estate_company_name, inv_selling_agent_name, inv_total_purchase_price, inv_commission, inv_selling_brokerage_commission, inv_selling_brokerage_currency, inv_closing_note, inv_prepared_by, inv_name, inv_company_name, inv_phone, inv_email, inv_address, inv_bank_name, inv_bank_account_name, inv_bank_account_number, inv_bank_sort_code, inv_bank_reference } = req.body;
+    const { lead_id, amount, lead_status, company_name, address, solicitor_name, number, email, mortgage_status, mortgage_amount, servey_search, conveyancing, sales_invoice_credited, exchange_of_contract_amount, exchange_of_contract_date, completion_date, inv_sale_date, inv_seller_developer_name, inv_property_address, inv_apartment_type, inv_buyer_name, inv_selling_real_estate_company_name, inv_selling_agent_name, inv_total_purchase_price, inv_commission, inv_selling_brokerage_commission, inv_selling_brokerage_currency, inv_closing_note, inv_prepared_by, inv_name, inv_company_name, inv_phone, inv_email, inv_address, inv_bank_name, inv_bank_account_name, inv_bank_account_number, inv_bank_sort_code, inv_bank_reference, commission_invoice_value } = req.body;
     if (!lead_id || !lead_status) {
         return res.status(400).json({ message: 'Please provide all fields', status: 'error' });
     }
@@ -218,6 +218,13 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
         }
 
         if(lead_status == 9) {
+            if(!commission_invoice_value) {
+                return res.status(400).json({ message: 'Please provide all information', status: 'error' });
+            }
+
+            [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, commission_invoice_value) VALUES (?, ?, ?, ?)`, [lead_id, user_id, lead_status, commission_invoice_value]);
+        }
+        if(lead_status == 10) {
             if(!exchange_of_contract_amount || !exchange_of_contract_date) {
                 return res.status(400).json({ message: 'Please provide all information', status: 'error' });
             }
@@ -227,7 +234,7 @@ router.put('/updatestatus',upload.fields([{ name: 'document' }]), authenticateTo
             [result] = await pool.query(`INSERT INTO ${TABLE.LEAD_SALES_STATUS_LIST_TABLE} (lead_id, user_id, lead_status, exchange_of_contract_amount, exchange_of_contract_date) VALUES (?, ?, ?, ?, ?)`, [lead_id, user_id, lead_status, exchange_of_contract_amount, exchange_db_date]);
         }
 
-        if(lead_status == 10) {
+        if(lead_status == 11) {
             if(!completion_date) {
                 return res.status(400).json({ message: 'Please provide completion date', status: 'error' });
             }
