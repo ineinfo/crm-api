@@ -57,7 +57,15 @@ function formatDateForDB(dateStr) {
     const [day, month, year] = dateStr.split('-');
     const fullYear = year.length === 2 ? `20${year}` : year;
     return `${fullYear}-${month}-${day}`;
+}
 
+function formatDateTimeForDB(dateTimeStr) {
+
+    const [datePart, timePart] = dateTimeStr.split(' ');
+    const [day, month, year] = datePart.split('-');
+    const fullYear = year.length === 2 ? `20${year}` : year;
+    const time = timePart ? timePart : '00:00:00';
+    return `${fullYear}-${month}-${day} ${time}`;
 }
 
 module.exports = {
@@ -65,5 +73,6 @@ module.exports = {
     checkEmailExistOrNot,
     checkPhoneExistOrNot,
     formatUTCToLocalDate,
-    formatDateForDB
+    formatDateForDB,
+    formatDateTimeForDB
 }

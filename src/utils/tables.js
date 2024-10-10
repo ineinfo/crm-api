@@ -37,6 +37,7 @@ const TABLES = {
     SALES_OFFERS_TABLE:'sales_offers',
     MASTER_SALES_PROGRESSION_TABLE: 'master_sales_progression',
     LEAD_SALES_STATUS_LIST_TABLE: 'lead_sales_status_list',
+    CALENDER_TABLE: 'calender'
     
     
 }
