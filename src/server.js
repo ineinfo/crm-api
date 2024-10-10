@@ -28,6 +28,8 @@ const path = require('path');
 app.use('/userimages', express.static(path.join(__dirname, '../public/userimages')));
 app.use('/propertyimages', express.static(path.join(__dirname, '../public/propertyimages')));
 app.use('/lead_documents', express.static(path.join(__dirname, '../public/lead_documents')));
+app.use('/lead_complete_documents', express.static(path.join(__dirname, '../public/lead_complete_documents')));
+
 
 
 app.use(bodyParser.json());
