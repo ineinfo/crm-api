@@ -192,6 +192,53 @@ router.get('/finance/', async (req, res) => {
 });
 
 
+
+// Get archive
+router.get('/archive/', async (req, res) => {
+  try {
+    // Base query with condition to get only properties with status = 1
+    const baseQuery = `SELECT ll.*, mst.sales_status FROM ${TABLE.LEADS_TABLE} ll LEFT JOIN ${TABLE.MASTER_SALES_PROGRESSION_TABLE} mst ON mst.id = ll.lead_status WHERE ll.status = 0`;
+    const orderquery = ` ORDER BY ll.lead_status DESC`;
+    const propertyQuery = baseQuery + orderquery;
+
+    const [propertyResult] = id ? await pool.query(propertyQuery, [id]) : await pool.query(propertyQuery);
+
+    if (!propertyResult.length) {
+      return res.status(404).json({ message: 'Archive lead not found', status: 'error' });
+    }
+
+    // Retrieve images, amenities, and match_property for each property
+    const propertiesWithExtras = await Promise.all(propertyResult.map(async property => {
+      const [images] = await pool.query(`SELECT images_url FROM ${TABLE.LEADS_IMAGES_TABLE} WHERE lead_id = ?`, [property.id]);
+      const [amenities] = await pool.query(`SELECT amenities_id FROM ${TABLE.LEADS_AMENITIES_TABLE} WHERE lead_id = ?`, [property.id]);
+      const [property_type] = await pool.query(`SELECT property_type_id FROM ${TABLE.LEADS_PROPERTY_TYPES_TABLE} WHERE lead_id = ?`, [property.id]);
+      const [no_of_bathrooms] = await pool.query(`SELECT no_of_bathrooms FROM ${TABLE.LEADS_NOOFBATHROOM_TABLE} WHERE lead_id = ?`, [property.id]);
+      const [parking_option] = await pool.query(`SELECT parking_option_id FROM ${TABLE.LEADS_PARKING_OPTIONS_TABLE} WHERE lead_id = ?`, [property.id]);
+      const [matchProperties] = await pool.query(`SELECT * FROM ${TABLE.MATCH_PROPERTY_TABLE} WHERE lead_id = ?`, [property.id]);
+
+      return {
+        ...property,
+        files: images.map(img => img.images_url),
+        amenities: amenities.map(amenity => amenity.amenities_id),
+        property_type: property_type.map(property_type => property_type.property_type_id),
+        no_of_bathrooms: no_of_bathrooms.map(no_of_bathrooms => no_of_bathrooms.no_of_bathrooms),
+        parking_option: parking_option.map(parking_option => parking_option.parking_option_id),
+        match_property: matchProperties
+      };
+    }));
+
+    // Return the response based on whether a single property or multiple properties were requested
+    res.status(200).json({
+      data:  propertiesWithExtras,
+      message: 'Archive lead retrieved successfully',
+      status: true
+    });
+  } catch (error) {
+    console.error('Error retrieving : Archive lead', error);
+    res.status(500).json({ message: 'Server error', status: 'error' });
+  }
+});
+
 // Get property(ies)
 router.get('/:id?', async (req, res) => {
   const id = req.params.id;
