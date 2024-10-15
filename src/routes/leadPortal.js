@@ -346,7 +346,8 @@ router.put('/:id', authenticateToken, upload.fields([
     property_type = [],
     number_of_bathrooms = [],
     amenities = [],
-    parking_option = []
+    parking_option = [],
+    note,
   } = req.body;
   let property_type_ids = property_type;
   let parking_options = parking_option;
@@ -394,7 +395,7 @@ router.put('/:id', authenticateToken, upload.fields([
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    let updates = { lead_type, first_name, last_name, starting_price, location, sqft_starting_size, finance, parking, furnished, account_type, leasehold_length, handover_date: formattedHandoverDate, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, range_min, range_max, property_status, user_id };
+    let updates = { lead_type, first_name, last_name, starting_price, location, sqft_starting_size, finance, parking, furnished, account_type, leasehold_length, handover_date: formattedHandoverDate, email, phone_number, service_charges, state_id, city_id, pincode, council_tax_band, range_min, range_max, property_status,note, user_id };
 
     // Build update query
     const updateEntries = Object.entries(updates).filter(([key, value]) => value !== undefined);
