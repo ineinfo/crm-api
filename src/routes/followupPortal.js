@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
         const leadid = url.searchParams.get('lead_id');
         const id = getQueryParamId(fullUrl);
         let query = `SELECT lf.*, l.first_name as lead_first_name, l.last_name as lead_last_name FROM ${TABLE.LEADS_FOLLOWUP_TABLE} as lf 
-        LEFT JOIN ${TABLE.LEADS_TABLE} as l on l.id = lf.lead_id WHERE lf.status != 0 and l.status != 0`;
+        LEFT JOIN ${TABLE.LEADS_TABLE} as l on l.id = lf.lead_id WHERE lf.status != 0`;
 
         const queryParams = [];
 
