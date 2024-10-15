@@ -200,7 +200,7 @@ router.get('/archive/', async (req, res) => {
     const baseQuery = `SELECT ll.*, mst.sales_status FROM ${TABLE.LEADS_TABLE} ll LEFT JOIN ${TABLE.MASTER_SALES_PROGRESSION_TABLE} mst ON mst.id = ll.lead_status WHERE ll.status = 0`;
     const orderquery = ` ORDER BY ll.lead_status DESC`;
     const propertyQuery = baseQuery + orderquery;
-
+    console.log('propertyQuery',propertyQuery);
     const [propertyResult] = await pool.query(propertyQuery);
 
     if (!propertyResult.length) {
