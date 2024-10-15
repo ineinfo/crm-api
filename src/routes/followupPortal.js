@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
 
     try {
 
-        const [leadCheck] = await pool.query(`SELECT id FROM ${TABLE.LEADS_TABLE} WHERE id = ? and status = 2`, [lead_id]);
+        const [leadCheck] = await pool.query(`SELECT id FROM ${TABLE.LEADS_TABLE} WHERE id = ? and status != 0`, [lead_id]);
         if (leadCheck.length === 0) {
             return res.status(404).json({ message: 'Lead not found', status: 'error' });
         }
@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
         const leadid = url.searchParams.get('lead_id');
         const id = getQueryParamId(fullUrl);
         let query = `SELECT lf.*, l.first_name as lead_first_name, l.last_name as lead_last_name FROM ${TABLE.LEADS_FOLLOWUP_TABLE} as lf 
-        LEFT JOIN ${TABLE.LEADS_TABLE} as l on l.id = lf.lead_id WHERE lf.status = 1 and l.status = 2`;
+        LEFT JOIN ${TABLE.LEADS_TABLE} as l on l.id = lf.lead_id WHERE lf.status != 0 and l.status != 0`;
 
         const queryParams = [];
 
