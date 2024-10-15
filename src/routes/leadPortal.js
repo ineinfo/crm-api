@@ -201,7 +201,7 @@ router.get('/archive/', async (req, res) => {
     const orderquery = ` ORDER BY ll.lead_status DESC`;
     const propertyQuery = baseQuery + orderquery;
 
-    const [propertyResult] = id ? await pool.query(propertyQuery, [id]) : await pool.query(propertyQuery);
+    const [propertyResult] = await pool.query(propertyQuery);
 
     if (!propertyResult.length) {
       return res.status(404).json({ message: 'Archive lead not found', status: 'error' });
