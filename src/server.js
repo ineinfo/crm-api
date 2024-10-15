@@ -18,6 +18,8 @@ const councilTaxBandPortal = require('./routes/councilTaxBandPortal'); // Countr
 const propertyStatusPortal = require('./routes/propertyStatusPortal'); // Country path
 const salesprogression = require('./routes/salesProgressionPortal'); // Country path
 const calenderPortal = require('./routes/calenderPortal'); // Country path
+const followupPortal = require('./routes/followupPortal.js'); // Follow Up path
+
 
 
 
@@ -74,6 +76,7 @@ app.use('/counciltaxband', councilTaxBandPortal);
 app.use('/propertystatus', propertyStatusPortal);
 app.use('/salesprogression', salesprogression);
 app.use('/calender', calenderPortal);
+app.use('/followup', followupPortal);
 
 
 
