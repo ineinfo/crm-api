@@ -290,12 +290,9 @@ router.get('/:id?', async (req, res) => {
   }
 });
 
-
-router.put('/archive/:id', authenticateToken), async (req, res) => {
+router.put('/archive/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
-  
-  const user_id = req.user.id;
-  
+  const user_id = req.user.id;  
   try {
     // Check if the property exists
     const [property] = await pool.query(`SELECT id FROM ${TABLE.LEADS_TABLE} WHERE id = ?`, [id]);
@@ -310,9 +307,9 @@ router.put('/archive/:id', authenticateToken), async (req, res) => {
     console.error('Error updating : Lead'  , error);
     res.status(500).json({ message: 'Server error', status: 'error' });
   }
-};
+});
 
-router.put('/backactive/:id', authenticateToken), async (req, res) => {
+router.put('/active/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   
   const user_id = req.user.id;
@@ -331,7 +328,7 @@ router.put('/backactive/:id', authenticateToken), async (req, res) => {
     console.error('Error updating : Lead'  , error);
     res.status(500).json({ message: 'Server error', status: 'error' });
   }
-};
+});
 
 router.put('/:id', authenticateToken, upload.fields([
   { name: 'files', maxCount: 10 },
