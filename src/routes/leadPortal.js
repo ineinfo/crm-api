@@ -312,7 +312,7 @@ router.put('/archive/:id', authenticateToken), async (req, res) => {
   }
 };
 
-router.put('/active/:id', authenticateToken), async (req, res) => {
+router.put('/backactive/:id', authenticateToken), async (req, res) => {
   const { id } = req.params;
   
   const user_id = req.user.id;
