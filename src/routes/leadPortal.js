@@ -194,10 +194,14 @@ router.get('/finance/', async (req, res) => {
 
 
 // Get archive
-router.get('/archive/', async (req, res) => {
+router.get('/archive/:id?', async (req, res) => {
+  const id = req.params.id;
   try {
     // Base query with condition to get only properties with status = 1
     const baseQuery = `SELECT ll.*, mst.sales_status FROM ${TABLE.LEADS_TABLE} ll LEFT JOIN ${TABLE.MASTER_SALES_PROGRESSION_TABLE} mst ON mst.id = ll.lead_status WHERE ll.status = 0`;
+    if(id) {
+      baseQuery+=` AND ll.id = ${id}`
+    }
     const orderquery = ` ORDER BY ll.lead_status DESC`;
     const propertyQuery = baseQuery + orderquery;
     console.log('propertyQuery',propertyQuery);
@@ -229,7 +233,7 @@ router.get('/archive/', async (req, res) => {
 
     // Return the response based on whether a single property or multiple properties were requested
     res.status(200).json({
-      data:  propertiesWithExtras,
+      data:  id > 0 ? propertiesWithExtras[0] : propertiesWithExtras,
       message: 'Archive lead retrieved successfully',
       status: true
     });
