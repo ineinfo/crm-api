@@ -330,6 +330,28 @@ router.put('/active/:id', authenticateToken, async (req, res) => {
   }
 });
 
+router.put('/updatenote/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  
+  const user_id = req.user.id;
+  const {note} = req.body;
+
+  try {
+    // Check if the property exists
+    const [property] = await pool.query(`SELECT id FROM ${TABLE.LEADS_TABLE} WHERE id = ?`, [id]);
+    if (!property.length) return res.status(404).json({ message: 'Lead not found', status: 'error' });
+
+
+
+    await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET note = ?, user_id = ? WHERE id = ?`, [note, user_id, id]);
+
+    res.status(200).json({ data: '', message:  'Note updated successfully', status: true });
+  } catch (error) {
+    console.error('Error updating : Lead'  , error);
+    res.status(500).json({ message: 'Server error', status: 'error' });
+  }
+});
+
 router.put('/:id', authenticateToken, upload.fields([
   { name: 'files', maxCount: 10 },
   { name: 'documents', maxCount: 10 }
