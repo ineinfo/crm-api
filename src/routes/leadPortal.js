@@ -322,7 +322,7 @@ router.put('/active/:id', authenticateToken, async (req, res) => {
 
 
 
-    await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET status = ?, note=? user_id = ? WHERE id = ?`, [1,note, user_id, id]);
+    await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET status = ?, note=?, user_id = ? WHERE id = ?`, [1,note, user_id, id]);
 
     res.status(200).json({ data: '', message:  'Lead updated successfully', status: true });
   } catch (error) {
