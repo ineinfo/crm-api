@@ -320,8 +320,6 @@ router.put('/active/:id', authenticateToken, async (req, res) => {
     const [property] = await pool.query(`SELECT id FROM ${TABLE.LEADS_TABLE} WHERE id = ?`, [id]);
     if (!property.length) return res.status(404).json({ message: 'Lead not found', status: 'error' });
 
-
-
     await pool.query(`UPDATE ${TABLE.LEADS_TABLE} SET status = ?, note=?, user_id = ? WHERE id = ?`, [1,note, user_id, id]);
 
     res.status(200).json({ data: '', message:  'Lead updated successfully', status: true });

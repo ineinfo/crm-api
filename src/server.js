@@ -19,6 +19,7 @@ const propertyStatusPortal = require('./routes/propertyStatusPortal'); // Countr
 const salesprogression = require('./routes/salesProgressionPortal'); // Country path
 const calenderPortal = require('./routes/calenderPortal'); // Country path
 const followupPortal = require('./routes/followupPortal.js'); // Follow Up path
+const opportunityPortal = require('./routes/opportunitiesPortal.js') // oppourtunity portal
 
 
 
@@ -77,10 +78,7 @@ app.use('/propertystatus', propertyStatusPortal);
 app.use('/salesprogression', salesprogression);
 app.use('/calender', calenderPortal);
 app.use('/followup', followupPortal);
-
-
-
-
+app.use('/opportunity', opportunityPortal);
 
 
 
