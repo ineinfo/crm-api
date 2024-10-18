@@ -165,7 +165,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
         email,
         mobile:mobileNumber,
         development_type:developmentType,
-        followup:followupDate,
+        followup:dbFollowupDate,
         user_id
       } ;
     
