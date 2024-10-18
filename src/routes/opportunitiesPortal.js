@@ -156,16 +156,16 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     // Update property details
     let updates = {
-        firstName,
-        lastName,
-        countryId,
-        stateId,
-        cityId,
+        first_name:firstName,
+        last_name:lastName,
+        country_id:countryId,
+        state_id:stateId,
+        city_id:cityId,
         postcode,
         email,
-        mobileNumber,
-        developmentType,
-        followupDate,
+        mobile:mobileNumber,
+        development_type:developmentType,
+        followup:followupDate,
         user_id
       } ;
     
