@@ -35,6 +35,7 @@ router.post('/',authenticateToken, async (req, res) => {
     mobileNumber,
     developmentType,
     followupDate,
+    note
   } = req.body;
   
   const user_id = req.user.id;
@@ -67,9 +68,9 @@ router.post('/',authenticateToken, async (req, res) => {
     // Insert property
     const [result] = await pool.query(
       `INSERT INTO ${TABLE.OPPORTUNITY_TABLE} 
-       (first_name, last_name, country_id, state_id, city_id, postcode, email, mobile, development_type, followup, user_id) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [firstName, lastName, countryId, stateId, cityId, postcode, email, mobileNumber, developmentType, dbFollowupDate,user_id]
+       (first_name, last_name, country_id, state_id, city_id, postcode, email, mobile, development_type, followup,note, user_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [firstName, lastName, countryId, stateId, cityId, postcode, email, mobileNumber, developmentType, dbFollowupDate,note,user_id]
     );
 
     res.status(201).json({ message: 'Prospect created successfully', status: true, lastInsertedId:result.insertId });
@@ -119,6 +120,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     mobileNumber,
     developmentType,
     followupDate,
+    note
   } = req.body;
   
   const user_id = req.user.id;
@@ -166,6 +168,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
         mobile:mobileNumber,
         development_type:developmentType,
         followup:dbFollowupDate,
+        note,
         user_id
       } ;
     
