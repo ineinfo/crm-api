@@ -97,7 +97,7 @@ router.post('/',authenticateToken, async (req, res) => {
 router.get('/:id?', async (req, res) => {
   const id = req.params.id;
   try {
-    const baseQuery = `SELECT o.*, GROUP_CONCAT(opt.property_type_id) AS property_type_ids FROM ${TABLE.OPPORTUNITY_TABLE} o 
+    const baseQuery = `SELECT o.*, [GROUP_CONCAT(opt.property_type_id)] AS property_type_ids FROM ${TABLE.OPPORTUNITY_TABLE} o 
       LEFT JOIN ${TABLE.OPPORTUNITY_PROPERTY_TYPES} opt
       ON opt.opportunity_id = o.id
     WHERE o.status != 0`;
