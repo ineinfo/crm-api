@@ -38,6 +38,7 @@ const TABLES = {
     MASTER_SALES_PROGRESSION_TABLE: 'master_sales_progression',
     LEAD_SALES_STATUS_LIST_TABLE: 'lead_sales_status_list',
     CALENDER_TABLE: 'calender',
-    OPPORTUNITY_TABLE: 'opportunity'
+    OPPORTUNITY_TABLE: 'opportunity',
+    OPPORTUNITY_PROPERTY_TYPES: 'opportunity_property_types'
 }
 module.exports = TABLES;

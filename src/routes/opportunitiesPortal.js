@@ -68,10 +68,21 @@ router.post('/',authenticateToken, async (req, res) => {
     // Insert property
     const [result] = await pool.query(
       `INSERT INTO ${TABLE.OPPORTUNITY_TABLE} 
-       (first_name, last_name, country_id, state_id, city_id, postcode, email, mobile, development_type, followup,note, user_id) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [firstName, lastName, countryId, stateId, cityId, postcode, email, mobileNumber, developmentType, dbFollowupDate,note,user_id]
+       (first_name, last_name, country_id, state_id, city_id, postcode, email, mobile, followup,note, user_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )`,
+      [firstName, lastName, countryId, stateId, cityId, postcode, email, mobileNumber,  dbFollowupDate,note,user_id]
     );
+
+    if(propertyTypes.length > 0) {
+      propertyTypes.map(async (item)=>{
+        const [result] = await pool.query(
+          `INSERT INTO ${TABLE.OPPORTUNITY_PROPERTY_TYPES} 
+           (opportunity_id, property_type_id) 
+           VALUES (?, ?)`,
+          [result.insertId, item]
+        );
+      }); 
+    }    
 
     res.status(201).json({ message: 'Prospect created successfully', status: true, lastInsertedId:result.insertId });
   } catch (error) {
@@ -84,9 +95,11 @@ router.post('/',authenticateToken, async (req, res) => {
 router.get('/:id?', async (req, res) => {
   const id = req.params.id;
   try {
-    // Base query with condition to get only properties with status = 1
-    const baseQuery = `SELECT * FROM ${TABLE.OPPORTUNITY_TABLE} WHERE status != 0`;
-    const condition = id ? ` AND id = ?` : '';
+    const baseQuery = `SELECT o.*,opt.property_type_id FROM ${TABLE.OPPORTUNITY_TABLE} o 
+      LEFT JOIN ${TABLE.OPPORTUNITY_PROPERTY_TYPES} opt
+      ON opt.opportunity_id = o.id
+    WHERE o.status != 0`;
+    const condition = id ? ` AND o.id = ?` : '';
     const propertyQuery = baseQuery + condition;
     const [propertyResult] = id ? await pool.query(propertyQuery, [id]) : await pool.query(propertyQuery);
 
