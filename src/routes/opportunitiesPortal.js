@@ -100,7 +100,7 @@ router.get('/:id?', async (req, res) => {
     const baseQuery = `SELECT o.*, JSON_ARRAYAGG(opt.property_type_id) AS property_type_id FROM ${TABLE.OPPORTUNITY_TABLE} o 
       LEFT JOIN ${TABLE.OPPORTUNITY_PROPERTY_TYPES} opt
       ON opt.opportunity_id = o.id
-    WHERE o.status != 0`;
+    WHERE o.status != 0 and opt.status != 0`;
     const condition = id ? ` AND o.id = ?` : '';
     const propertyQuery = baseQuery + condition + ' GROUP BY o.id';
     const [propertyResult] = id ? await pool.query(propertyQuery, [id]) : await pool.query(propertyQuery);
@@ -225,6 +225,7 @@ router.delete('/:id', async (req, res) => {
     const [result] = await pool.query(`UPDATE ${TABLE.OPPORTUNITY_TABLE} SET status = 0 WHERE id = ?`, [id]);
 
     if (result.affectedRows === 0) {
+      await pool.query(`UPDATE ${TABLE.OPPORTUNITY_PROPERTY_TYPES} SET status = 0 WHERE opportunity_id = ?`, [id]);
       return res.status(404).json({ message: 'Prospects not found', status: 'error' });
     }
 
