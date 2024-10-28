@@ -133,7 +133,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     postcode,
     email,
     mobileNumber,
-    developmentType,
+    propertyTypes,
     followupDate,
     note
   } = req.body;
@@ -181,7 +181,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
         postcode,
         email,
         mobile:mobileNumber,
-        development_type:developmentType,
         followup:dbFollowupDate,
         note,
         user_id
@@ -194,6 +193,19 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     if (updateQuery) {
       await pool.query(`UPDATE ${TABLE.OPPORTUNITY_TABLE} SET ${updateQuery} WHERE id = ?`, [...updateValues, id]);
+
+      await pool.query(`DELETE  FROM ${TABLE.OPPORTUNITY_PROPERTY_TYPES} WHERE opportunity_id = ?`, [id]);
+      
+      if(propertyTypes.length > 0) {
+        propertyTypes.map(async (item)=>{
+          await pool.query(
+            `INSERT INTO ${TABLE.OPPORTUNITY_PROPERTY_TYPES} 
+             (opportunity_id, property_type_id) 
+             VALUES (?, ?)`,
+            [id, item]
+          );
+        }); 
+      }
     }
     
 
