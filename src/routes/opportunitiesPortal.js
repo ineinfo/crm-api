@@ -102,7 +102,7 @@ router.get('/:id?', async (req, res) => {
       ON opt.opportunity_id = o.id
     WHERE o.status != 0`;
     const condition = id ? ` AND o.id = ?` : '';
-    const propertyQuery = baseQuery + condition;
+    const propertyQuery = baseQuery + condition + ' GROUP BY o.id';
     const [propertyResult] = id ? await pool.query(propertyQuery, [id]) : await pool.query(propertyQuery);
 
     if (!propertyResult.length) {
