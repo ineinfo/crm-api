@@ -73,18 +73,20 @@ router.post('/',authenticateToken, async (req, res) => {
       [firstName, lastName, countryId, stateId, cityId, postcode, email, mobileNumber,  dbFollowupDate,note,user_id]
     );
 
+    const opportunity_insert_id = result.insertId;
+
     if(propertyTypes.length > 0) {
       propertyTypes.map(async (item)=>{
         const [result] = await pool.query(
           `INSERT INTO ${TABLE.OPPORTUNITY_PROPERTY_TYPES} 
            (opportunity_id, property_type_id) 
            VALUES (?, ?)`,
-          [result.insertId, item]
+          [opportunity_insert_id, item]
         );
       }); 
     }    
 
-    res.status(201).json({ message: 'Prospect created successfully', status: true, lastInsertedId:result.insertId });
+    res.status(201).json({ message: 'Prospect created successfully', status: true, lastInsertedId:opportunity_insert_id });
   } catch (error) {
     console.error('Error creating Prospect:', error);
     res.status(500).json({ message: 'Server error', status: 'error' });
