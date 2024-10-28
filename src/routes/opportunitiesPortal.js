@@ -33,7 +33,7 @@ router.post('/',authenticateToken, async (req, res) => {
     postcode,
     email,
     mobileNumber,
-    developmentType,
+    propertyTypes: [],
     followupDate,
     note
   } = req.body;
