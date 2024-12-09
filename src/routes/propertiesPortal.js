@@ -292,7 +292,8 @@ router.put('/:id', authenticateToken,upload.fields([
     if (!property.length) return res.status(404).json({ message: 'Property not found', status: 'error' });
 
     // Update property details
-    let updates = { developer_name,  starting_price, location,  sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, handover_date:formattedHandoverDate, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id };
+    let updates = { developer_name,  starting_price, location,  sqft_starting_size, owner_name, parking, furnished,  account_type, leasehold_length, handover_date:formattedHandoverDate, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,description,range_min,range_max,property_status, user_id };
+    console.log('updatesupdates',updates);
     
     // Build update query
     const updateEntries = Object.entries(updates).filter(([key, value]) => value !== undefined);
