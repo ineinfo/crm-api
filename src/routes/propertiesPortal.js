@@ -46,6 +46,7 @@ router.post('/',authenticateToken, upload.fields([
     service_charges,
     council_tax_band,
     note,
+    description,
     range_min,
     range_max,
     property_status,
@@ -103,9 +104,9 @@ router.post('/',authenticateToken, upload.fields([
     // Insert property
     const [result] = await pool.query(
       `INSERT INTO ${TABLE.DEVELOPERS_TABLE} 
-       (developer_name, location, starting_price, owner_name, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode,council_tax_band,note,range_min,range_max,property_status, user_id) 
+       (developer_name, location, starting_price, owner_name, handover_date, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges,state_id, city_id, pincode,council_tax_band,note,description,range_min,range_max,property_status, user_id) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?, ?, ?, ?)`,
-      [developer_name, location, starting_price,owner_name, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,range_min,range_max, property_status,user_id]
+      [developer_name, location, starting_price,owner_name, formattedHandoverDate, sqft_starting_size, parking, furnished, account_type, leasehold_length, email, phone_number,service_charges, state_id, city_id, pincode,council_tax_band,note,description,range_min,range_max, property_status,user_id]
     );
 
     const propertyId = result.insertId;
@@ -238,6 +239,7 @@ router.put('/:id', authenticateToken,upload.fields([
     service_charges,
     council_tax_band,
     note,
+    description,
     range_min,
     range_max,
     property_status,
