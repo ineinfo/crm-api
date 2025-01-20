@@ -266,6 +266,9 @@ router.get('/:id?', async (req, res) => {
       const [no_of_bathrooms] = await pool.query(`SELECT no_of_bathrooms FROM ${TABLE.LEADS_NOOFBATHROOM_TABLE} WHERE lead_id = ?`, [property.id]);
       const [parking_option] = await pool.query(`SELECT parking_option_id FROM ${TABLE.LEADS_PARKING_OPTIONS_TABLE} WHERE lead_id = ?`, [property.id]);
       const [matchProperties] = await pool.query(`SELECT * FROM ${TABLE.MATCH_PROPERTY_TABLE} WHERE lead_id = ?`, [property.id]);
+      const [followUp] = await pool.query(`SELECT * FROM ${TABLE.LEADS_FOLLOWUP_TABLE} WHERE lead_id = ?`, [property.id]);
+      
+
 
       return {
         ...property,
@@ -274,14 +277,15 @@ router.get('/:id?', async (req, res) => {
         property_type: property_type.map(property_type => property_type.property_type_id),
         no_of_bathrooms: no_of_bathrooms.map(no_of_bathrooms => no_of_bathrooms.no_of_bathrooms),
         parking_option: parking_option.map(parking_option => parking_option.parking_option_id),
-        match_property: matchProperties
+        match_property: matchProperties,
+        followup: followUp
       };
     }));
 
     // Return the response based on whether a single property or multiple properties were requested
     res.status(200).json({
       data: id ? propertiesWithExtras[0] : propertiesWithExtras,
-      message: id ? commonTitle + ' retrieved successfully' : commonTitle + ' retrieved successfully',
+      message: id ? commonTitle + ' retrieved successfully dhara' : commonTitle + ' retrieved successfully',
       status: true
     });
   } catch (error) {
