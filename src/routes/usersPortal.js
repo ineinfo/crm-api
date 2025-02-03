@@ -25,11 +25,11 @@ const upload = multer({ storage: storage });
 
 // Create a new user
 router.post('/', upload.fields([{ name: 'avatarurl' }]), async (req, res) => {
-  const { first_name, last_name, email, mobile_number, role_id } = req.body;
+  const { first_name, last_name, email, mobile_number, role_id , password} = req.body;
   
   // Check if required fields are provided
-  if (!email || !mobile_number || !role_id) {
-    return res.status(400).json({ message: 'Email, mobile number, or role cannot be empty', status: 'error' });
+  if (!email || !mobile_number || !role_id ||!password) {
+    return res.status(400).json({ message: 'Email, mobile number, Password or role cannot be empty', status: 'error' });
   }
 
   // Email Validation
@@ -56,9 +56,9 @@ router.post('/', upload.fields([{ name: 'avatarurl' }]), async (req, res) => {
   try {
     // Insert the new user into the database
     const [result] = await pool.query(
-      `INSERT INTO ${TABLE.USERS_TABLE} (first_name, last_name, avatarurl, email, mobile_number, role_id) 
-       VALUES (?, ?, ?, ?, ?, ?)`, 
-      [first_name, last_name, avatarUrl, email, mobile_number, role_id]
+      `INSERT INTO ${TABLE.USERS_TABLE} (first_name, last_name, avatarurl, email, mobile_number, role_id , password) 
+       VALUES (?, ?, ?, ?, ?, ?,?)`, 
+      [first_name, last_name, avatarUrl, email, mobile_number, role_id, await bcrypt.hash(password, 10)]
     );
 
     // Return success response
@@ -126,7 +126,7 @@ router.get('/:id?', async (req, res) => {
 // UPDATE THE FIELDS
 router.put('/:id', upload.fields([{ name: 'avatarurl' }]), async (req, res) => {
   const { id } = req.params;
-  const { first_name, last_name, email, mobile_number, role_id } = req.body;
+  const { first_name, last_name, email, mobile_number, role_id, password } = req.body;
 
   try {
     // Get the existing user details to keep avatarurl if not provided
@@ -165,6 +165,10 @@ router.put('/:id', upload.fields([{ name: 'avatarurl' }]), async (req, res) => {
     if ('role_id' in req.body) {
       setClause.push('role_id = ?');
       fields.push(role_id || '');  // Default to empty string if undefined
+    }
+    if ('password' in req.body) {
+      setClause.push('password = ?');
+      fields.push(await bcrypt.hash(password, 10) || ''); 
     }
     if (newAvatarUrl) {
       setClause.push('avatarurl = ?');

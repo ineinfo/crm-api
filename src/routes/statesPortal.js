@@ -31,8 +31,8 @@ router.get('/:id?', async (req, res) => {
     try {
         // Construct the query
         const query = id
-            ? `SELECT * FROM ${TABLE.STATES_TABLE} WHERE country_id = ? AND status = 1`
-            : `SELECT * FROM ${TABLE.STATES_TABLE} WHERE status = 1`;
+            ? `SELECT * FROM ${TABLE.STATES_TABLE} WHERE country_id = ? AND status = 1 ORDER BY name ASC`
+            : `SELECT * FROM ${TABLE.STATES_TABLE} WHERE status = 1 ORDER BY name ASC`;
 
         // Execute the query
         const [result] = id
